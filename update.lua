@@ -5,20 +5,12 @@ Settings = {
     ["debug"] = true
 }
 
-Branch = "master"
-Scripts = {"mine", "update"}
-Debug = true
-
-function UpdateScripts()
-    
-end
-
 -- check args
 -- example commands:
--- update all
--- update mine
+-- update -a / update --all
+-- update -s
 -- update -b master all
--- update -b dev mine
+-- update -b dev -s mine
 
 local args = {...}
 if (#args == 0) then
@@ -27,11 +19,13 @@ if (#args == 0) then
     io.write("Options:\n")
     io.write("-a --all : Updates all scripts.\n")
     io.write("-b --branch <branch-name>\n")
-    io.write("-s --script <script-names>")
-    -- update -b master -a
+    io.write("-s --script <script-names>\n")
+
 else
-    for key, value in pairs(args) do
-        print(key, value)
+    for i = 1, #args, 1 do
+        if (string.find(args[i], "-b" or "--branch" or "-s" or "--script")) then
+            print(args[i], "flag found!")
+        end
     end
 end
 
@@ -40,7 +34,7 @@ end
 if (Settings["debug"]) then
     print("        -Scripts-")
     for i = 1, #Settings["scripts"], 1 do
-        print(Scripts[i])
+        print(Settings.scripts[i])
     end
     
     print("        -Branch-")
