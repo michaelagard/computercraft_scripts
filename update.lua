@@ -1,7 +1,8 @@
 
 BaseUrl = "https://raw.githubusercontent.com/michaelagard/computercraft_scripts"
 Branch = {"master", "dev-update-script"}
-Script = {"mine"}
+Script = {"mine", "update"}
+term.setTextColor(color.red)
 io.write("Updating\n")
 
 function Update()
@@ -11,6 +12,7 @@ function Update()
 end
 
 function DeletePreviousFile()
+    shell.run("rm", "mine.lua")
     shell.run("rm", "update.lua")
 end
 
