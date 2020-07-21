@@ -2,7 +2,6 @@ BaseUrl = "https://raw.githubusercontent.com/michaelagard/computercraft_scripts"
 Branch = "master"
 Scripts = {"mine", "update"}
 Debug = true
-local args = {...}
 
 function UpdateScripts()
     
@@ -15,19 +14,17 @@ end
 -- update -b master all
 -- update -b dev mine
 
+local args = {...}
 if (#args == 0) then
     io.write("Usage:\n")
-    io.write("update [OPTION]... [scriptName1, scriptName2, ...]")
+    io.write("update <options> <scripts>\n")
     io.write("Options:\n")
-    io.write(" -b, --branch - Specify repo branch.\n")
-    
-elseif (args[1] == "-b" or args[1] == "--branch") then
-    Branch = args[2]
-
-elseif (not(args[3] == "all" or args[1 == "all"])) then
-    Scripts = {}
-    for i = 3, #args, 1 do
-        Scripts[i - 2] = args[i]
+    io.write("all : Updates all scripts.\n")
+    io.write("-b, --branch - Specify repo branch.\n")
+else
+    ArgTable = {}
+    for i = 1, #args, 1 do
+        ArgTable[i] = arg[i]
     end
 end
 
@@ -39,8 +36,8 @@ if (debug) then
         print(Scripts[i])
     end
 
-    print("Args")
-    for i = 1, #args, 1 do
-        print(args[i])
+    print("ArgTable")
+    for i = 1, #ArgTable, 1 do
+        print(ArgTable[i])
     end
 end
