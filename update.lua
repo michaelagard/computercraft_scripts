@@ -1,12 +1,18 @@
 
 BaseUrl = "https://raw.githubusercontent.com/michaelagard/computercraft_scripts"
-Branch = {"master"}
+Branch = {"master", "dev-update-script"}
 Script = {"mine"}
-io.write("Updating")
-shell.run("wget", "https://github.com/michaelagard/computercraft_scripts/blob/master/mine.lua", Scripts[1] .. ".lua")
+io.write("Updating\n")
 
 function Update()
     for i = 1, #Script, 1 do
-        shell.run("wget", "https://github.com/michaelagard/computercraft_scripts/blob/" .. Branch[1] .. "/" .. Script[1] .. ".lua") 
+        shell.run("wget", "https://github.com/michaelagard/computercraft_scripts/blob/" .. Branch[2] .. "/" .. Script[1] .. ".lua") 
     end
 end
+
+function DeletePreviousFile()
+    shell.run("rm", "update.lua")
+end
+
+DeletePreviousFile()
+Update()
