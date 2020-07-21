@@ -21,22 +21,22 @@ if (#args == 0) then
     io.write("Options:\n")
     io.write("all : Updates all scripts.\n")
     io.write("-b, --branch - Specify repo branch.\n")
-else
-    ArgTable = {}
-    for i = 1, #args, 1 do
-        ArgTable[i] = arg[i]
-    end
+elseif (#args >= 2 and args[1] == "-b") then
+    Branch = args[2]
+    for k ,v in pairs(args) do
+        print (k,v)
+    end 
 end
 
 --debug code
 
 if (debug) then
-    print("Scripts")
+    print("        -Scripts-")
     for i = 1, #Scripts, 1 do
         print(Scripts[i])
     end
 
-    print("ArgTable")
+    print("        -ArgTable-")
     for i = 1, #ArgTable, 1 do
         print(ArgTable[i])
     end
