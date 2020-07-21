@@ -1,4 +1,10 @@
 BaseUrl = "https://raw.githubusercontent.com/michaelagard/computercraft_scripts"
+Settings = {
+    ["branch"] = "master",
+    ["scripts"] = {"mine", "update"},
+    ["debug"] = true
+}
+
 Branch = "master"
 Scripts = {"mine", "update"}
 Debug = true
@@ -19,25 +25,24 @@ if (#args == 0) then
     io.write("Usage:\n")
     io.write("update <options> <scripts>\n")
     io.write("Options:\n")
-    io.write("all : Updates all scripts.\n")
-    io.write("-b, --branch - Specify repo branch.\n")
-elseif (#args >= 2 and args[1] == "-b") then
-    Branch = args[2]
-    for k ,v in pairs(args) do
-        print (k,v)
-    end 
+    io.write("-a --all : Updates all scripts.\n")
+    io.write("-b --branch <branch-name>\n")
+    io.write("-s --script <script-names>")
+    -- update -b master -a
+else
+    for key, value in pairs(args) do
+        print(key, value)
+    end
 end
 
 --debug code
 
-if (debug) then
+if (Settings["debug"]) then
     print("        -Scripts-")
-    for i = 1, #Scripts, 1 do
+    for i = 1, #Settings["scripts"], 1 do
         print(Scripts[i])
     end
-
-    print("        -ArgTable-")
-    for i = 1, #ArgTable, 1 do
-        print(ArgTable[i])
-    end
+    
+    print("        -Branch-")
+    print(#Settings["branch"])
 end
