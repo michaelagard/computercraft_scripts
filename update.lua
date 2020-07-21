@@ -1,30 +1,34 @@
-BaseUrl = "https://raw.githubusercontent.com/michaelagard/computercraft_scripts"
 Settings = {
-    ["arguments"] = nil,
+    ["arguments"] = {},
+    ["baseURL"] = "https://raw.githubusercontent.com/michaelagard/computercraft_scripts",
     ["branch"] = "master",
     ["scripts"] = {"mine", "update"},
     ["debug"] = true
 }
 
--- check args
--- example commands:
--- update -a / update --all
--- update -s
--- update -b master all
--- update -b dev -s mine
+-- arg parse code
 
 local args = {...}
 if (#args == 0) then
-    io.write("Usage:\n")
-    io.write("update <options> <scripts>\n")
-    io.write("Options:\n")
-    io.write("-a --all : Updates all scripts.\n")
-    io.write("-b --branch <branch-name>\n")
-    io.write("-s --script <script1,script2>\n")
-
+    io.write("Usage:\nupdate <options> <scripts>\nOptions:\n-a --all : Updates all scripts.\n-b --branch <branch-name>\n-s --script <script1,script2>\n")
 else
-    for k,v in pairs(args) do
-        Settings.arguments[v] = k
+    for i = 1, #args, 1 do
+        if (args[i] == "-b") then
+            Settings.branch = args[i+1]
+        end
+
+        if (args[i] == "-s") then
+            ScriptTable = {}
+            for j = i, #args, 1 do
+                if string.find(args[j], "-") then
+                    break
+                else
+                    ScriptTable[i] = args[i]
+                end
+            end
+
+            Settings.scripts = ScriptTable
+        end
     end
 end
 
@@ -38,7 +42,7 @@ if (Settings["debug"]) then
     print("        -Branch-")
     print(Settings["branch"])
     print("        -Args-")
-    for i = 1, #Settings.arguments, 1 do
-        print(Settings.arguments[i])
+    for ArgCount = 1, #args, 1 do
+        print(args[ArgCount])
     end
 end
