@@ -58,7 +58,7 @@ end
 local function updateScript(script)
 	local scriptUrl = settings.baseURL .. "/" .. settings.branch[1] .."/" .. script .. ".lua"
     local scriptPath = shell.dir() .. "/" .. script .. ".lua"
-    io.write("Attempting to download '" .. script .. ".lua' from:\n" .. scriptUrl)
+    io.write("> Attempting to download '" .. script .. ".lua' from the " .. settings.branch[1] .. " branch.")
 	local remoteScript = http.get(scriptUrl)
     local localScript = fs.open(scriptPath, "w")
     
@@ -102,20 +102,19 @@ else
             addArgumentToFlag(CurrentArg, args[i])
         end
     end
+
+    if (#settings.error > 0) then
+        for i = 1, #settings.error, 1 do
+            error(settings.error[i])
+        end
+    else
+        updateSettings()
+        for i = 1, #settings.scripts, 1 do
+            updateScript(settings.scripts[i])
+        end
+    end
 end
 
-if (#settings.error > 0) then
-    for i = 1, #settings.error, 1 do
-        error(settings.error[i])
-    end
-else
-    updateSettings()
-    for i = 1, #settings.scripts, 1 do
-        updateScript(settings.scripts[i])
-    end
-end
-print(settings.debug)
-    
 if (debug()) then
     print("-Selected Scripts-")
     for i = 1, #settings.scripts, 1 do
