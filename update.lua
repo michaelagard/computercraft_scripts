@@ -10,6 +10,8 @@ local settings = {
         ["--branch"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "-b", ["rel_setting"] = "branch"},
         ["--script"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "-s", ["rel_setting"] = "scripts"},
         ["--debug"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "--debug", ["rel_setting"] = "debug"},
+        ["-v"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "--version", ["rel_setting"] = ""},
+        ["--version"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "--version", ["rel_setting"] = ""},
     },
     ["default_scripts"] = {"mine", "update"},
     ["scripts"] = {},
@@ -21,7 +23,8 @@ local settings = {
         ["download_error"] = function (files) return "Faild to open script '" .. files[1] .. "' at: " .. files[2] .. "." end,
         ["open_script"] = function (files) return "Faild to open script '" .. files[1] end,
         ["no_script"] = function () return "No script specified." end,
-    }
+    },
+    ["version"] = "2020.7.22.1"
 }
 
 local function debug()
@@ -54,20 +57,20 @@ local function addArgumentToFlag(flag, arg)
 end
 
 local function updateSettings()
-    for flag, value in pairs(settings.flags) do
-        if (settings.flags[flag].passed == true) then
+    for flagString, unusedValue in pairs(settings.flags) do
+        if (settings.flags[flagString].passed == true) then
             local newSettings = {}
-            local argument = settings.flags[flag].arguments
+            local argument = settings.flags[flagString].arguments
 
             for i = 1, #argument, 1 do
                 if (debug()) then
-                    print("updateSettings()", settings.flags[flag].rel_setting, argument[i])
+                    print("updateSettings()", settings.flags[flagString].rel_setting, argument[i])
                 end
 
                 table.insert(newSettings, argument[i])
             end
             
-            settings[settings.flags[flag].rel_setting] = newSettings
+            settings[settings.flags[flagString].rel_setting] = newSettings
         end
     end
 
@@ -77,10 +80,6 @@ local function updateSettings()
 
     if (settings.flags["-b"].passed == false) then
         settings.branch = settings.default_branch
-    end
-    
-    if (settings.scripts[1] == nil) then
-        addError("no_script")
     end
 end
 
@@ -106,6 +105,7 @@ end
 local args = {...}
 if (#args == 0) then
     io.write("Usage:\nupdate <options> <scripts>\nOptions/flags:\n-a --all : Updates all scripts.\n-b --branch <branch-name>\n-s --script <script1,script2>\n")
+
 else
     for i = 1, #args, 1 do
         if (settings.flags[args[i]] == nil and string.match(args[i], '^%-')) then
@@ -117,7 +117,13 @@ else
                 settings.flags["--debug"].arguments = {true}
                 settings.debug = true
             end
-            
+
+            if (args[i] == "-v" or args[i] == "--version") then
+                settings.flags["-v"].arguments = {true}
+                settings.flags["--version"].arguments = {true}
+                print("v" .. settings.version)
+            end
+
             if (debug()) then
                 print("Valid flag Found at index: " .. i, args[i])
             end
@@ -136,6 +142,10 @@ else
     
     updateSettings()
 
+    if (settings.scripts[1] == nil and "-v" == false) then
+        addError("no_script")
+    end
+
     if (#settings.error > 0) then
         for i = 1, #settings.error, 1 do
             error(settings.error[i])
@@ -148,16 +158,15 @@ else
 end
 
 if (debug()) then
-    print("-Selected Scripts-")
+    io.write("- Selected Scripts:\t")
     for i = 1, #settings.scripts, 1 do
-        print("", settings.scripts[i])
+        io.write(settings.scripts[i] .. " ")
     end
-    print("-Selected Branch-")
-    print("", settings["branch"][1])
-    print("-Selected Flags-\n", "-Flag-","-Args-")
-    for flagKey, flagVal in pairs(settings.flags) do
-        for i = 1, #settings.flags[flagKey].arguments , 1 do
-            print("", flagKey, settings.flags[flagKey].arguments[i])
+    io.write("\n- Selected Branch:\t", settings["branch"][1])
+    io.write("\n- Selected Flags -\n", "-Flag-\t" .. "-Args-\n")
+    for FlagString, unusedValue in pairs(settings.flags) do
+        for i = 1, #settings.flags[FlagString].arguments , 1 do
+            print("", FlagString, settings.flags[FlagString].arguments[i])
         end
     end
 end
