@@ -1,172 +1,243 @@
 local settings = {
-    ["baseURL"] = "https://raw.githubusercontent.com/michaelagard/computercraft_scripts/",
+    ["base_repository_url"] = "https://raw.githubusercontent.com/michaelagard/computercraft_scripts",
     ["default_branch"] = {"master"},
-    ["branch"] = {},
-    ["flags"] = {
-        ["-a"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "--all", ["rel_setting"] = "scripts"},
-        ["-b"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "--branch", ["rel_setting"] = "branch"},
-        ["-s"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "--script", ["rel_setting"] = "scripts"},
-        ["--all"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "-a", ["rel_setting"] = "scripts"},
-        ["--branch"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "-b", ["rel_setting"] = "branch"},
-        ["--script"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "-s", ["rel_setting"] = "scripts"},
-        ["--debug"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "--debug", ["rel_setting"] = "debug"},
-        ["-v"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "--version", ["rel_setting"] = ""},
-        ["--version"] = {["arguments"] = {}, ["passed"] = false, ["rel_flag"] = "--version", ["rel_setting"] = ""},
-    },
     ["default_scripts"] = {"mine", "update"},
+    ["branch"] = {},
     ["scripts"] = {},
-    ["debug"] = false,
-    ["error"] = {},
-    ["error_type"] = {
-        ["duplicate_flag"] = function (flag) return "'" .. flag .. "'" .. " Duplicate flag found." end,
-        ["invalid_flag"] = function (flag) return "'" .. flag .. "'" .. " is not a valid flag. Please type 'update' to see list of flags." end,
-        ["download_error"] = function (files) return "Faild to open script '" .. files[1] .. "' at: " .. files[2] .. "." end,
-        ["open_script"] = function (files) return "Faild to open script '" .. files[1] end,
-        ["no_script"] = function () return "No script specified." end,
+    ["flags"] = {
+        ["-b"] = {["arguments"] = {}, ["passed"] = false, ["verbose_flag"] = "--branch", ["related_settings"] = "branch"},
+        ["-s"] = {["arguments"] = {}, ["passed"] = false, ["verbose_flag"] = "--script", ["related_settings"] = "scripts"},
+        ["-a"] = {["passed"] = false, ["verbose_flag"] = "--all", ["related_settings"] = "scripts"},
+        ["-v"] = {["passed"] = false, ["verbose_flag"] = "--version"},
+        ["--debug"] = {["passed"] = false},
     },
-    ["version"] = "2020.7.22.1"
+    ["usage_string"] = "Usage: update [options...]\nFlags:\n-a --all: Updates default scripts.\n-b --branch <branch-name>\n-s --script <script1,script2>\n-v --version: Displays version number.\n",
+    ["version"] = "2020.7.24.1",
 }
 
-local function debug()
-    return settings.debug == true
+local errors = {
+        ["duplicate_flag"] = function (flag) return "'" .. flag .. "'" .. " is a duplicate flag." end,
+        ["invalid_flag"] = function (flag) return "'" .. flag .. "'" .. " is not a valid flag. Type 'update' to see list of flags." end,
+        ["open_script"] = function (files) return "Faild to open script '" .. files[1]"." end,
+        ["no_script"] = function () return "No script specified." end,
+        ["conflicting_flag"] = function (flags) return "Cannot use the flag " .. flags[1] .. " with " .. flags[2] .. "." end,
+        ["failed_opening_script"] = function (file) return "Failed opening script" end,
+        ["download_error"] = function (file) return "404: " .. file .. " not found." end,
+        ["flag_cannot_have_arguments"] = function (flag) return "`" .. flag .. "` cannot take arguments." end,
+        ["no_flag_set"] = function (flag) return "`" .. flag .. "` cannot be applied without a flag." end,
+}
+
+local args = {...}
+local valid_flag_table = settings.flags
+
+local function debugMode() return settings.flags["--debug"].passed end
+
+local function stdoutError(err, args)
+    term.setTextColor(colors.red)
+    print("Error: " .. errors[err](args))
 end
 
-local function addError(type, arg)
-    table.insert(settings.error, settings.error_type[type](arg))
-end
-
-local function validFlag(flag)
-    return settings.flags[flag] ~= nil
-end
-
-local function addFlagToIgnored(flag)
-    settings.flags[flag].passed = true
-    settings.flags[settings.flags[flag].rel_flag].passed = "ignored"
-end
-
-local function flagIgnored(flag)
-    return settings.flags[flag].passed
-end
-
-local function addArgumentToFlag(flag, arg)
-    if (debug()) then
-        print("addArgumentToFlag", flag, arg)
+local function tableLength(table)
+    local count = 0
+    if type(table) == "table" then
+        for key, value in pairs(table) do
+            count = count + 1
+        end
+    return count
+    else
+        return 0
     end
-
-    table.insert(settings.flags[flag].arguments, arg)
 end
 
-local function updateSettings()
-    for flagString, unusedValue in pairs(settings.flags) do
-        if (settings.flags[flagString].passed == true) then
-            local newSettings = {}
-            local argument = settings.flags[flagString].arguments
+local function findAbbreviatedFlag(verbose_flag)
+    for abbreviated_flag, table in pairs(valid_flag_table) do
+        if (valid_flag_table[abbreviated_flag].verbose_flag == verbose_flag) then
+            return abbreviated_flag
+        end
+    end
+    return verbose_flag
+end
 
-            for i = 1, #argument, 1 do
-                if (debug()) then
-                    print("updateSettings()", settings.flags[flagString].rel_setting, argument[i])
+local function isValidAbbreviatedFlag(param)
+    return valid_flag_table[param] ~= nil
+end
+
+local function isValidVerboseFlag(param)
+    for abbreviated_flag, table in pairs(valid_flag_table) do
+        if (valid_flag_table[abbreviated_flag].verbose_flag == param) then return true end
+    end
+    return false
+end
+
+local function isValidFlag(param)
+    return isValidAbbreviatedFlag(param) or isValidVerboseFlag(param)
+end
+
+local function setFlagToPassed(abbreviated_flag, argument_index)
+    valid_flag_table[abbreviated_flag].passed = true
+    if (debugMode()) then print(argument_index, "setFlagToPassed()", abbreviated_flag) end
+end
+
+local function hasFlagBeenPassed(valid_flag)
+    return valid_flag_table[findAbbreviatedFlag(valid_flag)].passed
+end
+
+local function flagCanHaveArguments(valid_flag)
+    return valid_flag_table[findAbbreviatedFlag(valid_flag)].arguments ~= nil
+end
+
+
+local function addArgumentToFlag(abbreviated_flag, argument, argument_index)
+    table.insert(valid_flag_table[abbreviated_flag].arguments, argument)
+    if (debugMode()) then
+        print(argument_index, "addArgumentToFlag()", abbreviated_flag, argument)
+    end
+end
+
+local function updateSettings(flag, arguments)
+    if (settings.flags[flag].related_settings ~= nil) then
+        if (debugMode()) then
+            print("updateSettings()", flag, arguments)
+        end
+        settings[settings.flags[flag].related_settings] = arguments
+    end
+end
+
+local function handleArguments(args_table)
+    local current_flag = ""
+
+    for argument_index = 1, tableLength(args_table), 1 do
+        local current_argument = args_table[argument_index]
+        -- checks for valid flag
+        if (isValidFlag(current_argument)) then
+            local current_abbreviated_argument = findAbbreviatedFlag(current_argument)
+            -- checks if valid flag has been pasesd
+            if (hasFlagBeenPassed(current_abbreviated_argument) == false) then
+                if (current_argument == "-a" or current_argument == "--all") then
+
+                    if (settings.flags["-s"].passed == true) then
+                        error(stdoutError("conflicting_flag", {current_argument, "-s or --script"}))
+                    end
                 end
 
-                table.insert(newSettings, argument[i])
+                setFlagToPassed(current_abbreviated_argument, argument_index)
+                current_flag = current_argument
+            else
+                error(stdoutError("duplicate_flag", current_argument))
             end
-            
-            settings[settings.flags[flagString].rel_setting] = newSettings
+        --checks if current_argument starts with a hyphen and if it's not a valid flag
+        elseif (string.match(current_argument, '^%-')) then
+            error(stdoutError("invalid_flag", current_argument))
+        -- checks if current_flag is empty
+        elseif (current_flag == "") then
+            error(stdoutError("no_flag_set", current_argument))
+        -- checks if the current flag can have arguments
+        elseif (flagCanHaveArguments(current_flag)) then
+                addArgumentToFlag(findAbbreviatedFlag(current_flag), current_argument, argument_index)
+        else
+            error(stdoutError("flag_cannot_have_arguments", current_flag))
+        end
+    end
+    for flag, value in pairs(valid_flag_table) do
+        if hasFlagBeenPassed(findAbbreviatedFlag(flag)) then
+            updateSettings(flag, valid_flag_table[flag].arguments)
         end
     end
 
-    if (settings.flags["-a"].passed == true) then
+    if tableLength(settings.scripts) == 0 then
         settings.scripts = settings.default_scripts
     end
-
-    if (settings.flags["-b"].passed == false) then
+    if tableLength(settings.branch) == 0 then
         settings.branch = settings.default_branch
+    end
+    if (valid_flag_table["-v"].passed == true) then
+        print(settings.version)
+        return
+    end
+    Arguments_Handled = true
+end
+
+local function confirmContinue()
+    term.setTextColor(colors.yellow)
+    io.write("- Selected Scripts:\t")
+    term.setTextColor(colors.orange)
+    for script = 1, tableLength(settings.scripts), 1 do
+        if (tableLength(settings.scripts) ~= script) then
+            io.write(tostring(settings.scripts[script]) .. ", ")
+        else
+            io.write(tostring(settings.scripts[script]))
+        end
+    end
+    term.setTextColor(colors.yellow)
+    io.write("\n- Selected Branch:\t\t")
+    term.setTextColor(colors.orange)
+    io.write(settings.branch[1] or "")
+
+    term.setTextColor(colors.white)
+    io.write("\nContinue with this configuration? (y/N) : ")
+    local answer=io.read()
+    if answer:match("[yY]") then
+        return true
+    elseif (answer:match("[nN]") or answer == "") then
+        print("Aborting script.")
+        return false
+    else
+        print("Invalid response.")
+        return false
     end
 end
 
-local function updateScript(script)
-	local scriptUrl = settings.baseURL .. "/" .. settings.branch[1] .."/" .. script .. ".lua"
-    local scriptPath = shell.dir() .. "/" .. script .. ".lua"
-    io.write("> Attempting to download '" .. script .. ".lua' from the " .. settings.branch[1] .. " branch.\n")
-	local remoteScript = http.get(scriptUrl)
-    local localScript = fs.open(scriptPath, "w")
-    
-    if not remoteScript then
-		addError("download_error", {script, scriptUrl})
-    end
+local function updateScript(scriptName)
+	local scriptUrl = settings.base_repository_url .. "/" .. settings.branch[1] .."/" .. scriptName .. ".lua"
+	local scriptPath = shell.dir() .. "/" .. scriptName
+	print("> " .. scriptPath .. "...")
 
-	if not localScript then
-		addError("open_script", scriptPath .. script)
+	local remoteScript = http.get(scriptUrl)
+	if not remoteScript then
+        error(stdoutError("failed_opening_script", scriptPath))
 	end
 
+	local localScript = fs.open(scriptPath, "w")
+	if not localScript then
+        error(stdoutError("failed_opening_script", scriptPath))
+	end
+    if remoteScript.readAll() == "404: Not Found" then
+        error(stdoutError("failed_opening_script", scriptUrl))
+    end
 	localScript.write(remoteScript.readAll())
 	localScript.close()
 end
 
-local args = {...}
-if (#args == 0) then
-    io.write("Usage:\nupdate <options> <scripts>\nOptions/flags:\n-a --all : Updates all scripts.\n-b --branch <branch-name>\n-s --script <script1,script2>\n")
+handleArguments(args)
 
-else
-    for i = 1, #args, 1 do
-        if (settings.flags[args[i]] == nil and string.match(args[i], '^%-')) then
-            addError("invalid_flag", args[i])
+if (Arguments_Handled == true) then
+    if (debugMode()) then
+        term.setTextColor(colors.orange)
+        io.write("* Selected Scripts:\t")
+        for i = 1, tableLength(settings.scripts), 1 do
+            io.write(settings.scripts[i] .. " ")
         end
-
-        if (validFlag(args[i])) then
-            if (args[i] == "--debug") then
-                settings.flags["--debug"].arguments = {true}
-                settings.debug = true
+        io.write("\n* Selected Branch:\t\t" ..  (settings.branch[1] or ""))
+        io.write("\n* Argument List")
+        for FlagString, unusedValue in pairs(settings.flags) do
+            if (flagCanHaveArguments(FlagString) and valid_flag_table[FlagString].arguments[1] ~= nil) then
+                io.write("\n" .. FlagString .. ": ")
+                for i = 1, tableLength(settings.flags[FlagString].arguments) , 1 do
+                    if (settings.flags[FlagString].arguments ~= {}) then
+                        if (tableLength(settings.flags[FlagString].arguments) ~= i) then
+                            io.write(tostring(settings.flags[FlagString].arguments[i]) .. ", ")
+                        else
+                            io.write(tostring(settings.flags[FlagString].arguments[i]))
+                        end
+                    end
+                end
             end
-
-            if (args[i] == "-v" or args[i] == "--version") then
-                settings.flags["-v"].arguments = {true}
-                settings.flags["--version"].arguments = {true}
-                print("v" .. settings.version)
-            end
-
-            if (debug()) then
-                print("Valid flag Found at index: " .. i, args[i])
-            end
-
-            if (flagIgnored(args[i])) then
-                addError("duplicate_flag", args[i])
-            end
-
-            addFlagToIgnored(args[i])
-            CurrentArg = args[i]
-            
-        elseif (CurrentArg ~= nil) then
-            addArgumentToFlag(CurrentArg, args[i])
         end
+    io.write("\n")
     end
-    
-    updateSettings()
-
-    if (settings.scripts[1] == nil and "-v" == false) then
-        addError("no_script")
-    end
-
-    if (#settings.error > 0) then
-        for i = 1, #settings.error, 1 do
-            error(settings.error[i])
-        end
-    else
-        for i = 1, #settings.scripts, 1 do
+    if confirmContinue() then
+        for i = 1, tableLength(settings.scripts), 1 do
             updateScript(settings.scripts[i])
         end
-    end
-end
-
-if (debug()) then
-    io.write("- Selected Scripts:\t")
-    for i = 1, #settings.scripts, 1 do
-        io.write(settings.scripts[i] .. " ")
-    end
-    io.write("\n- Selected Branch:\t", settings["branch"][1])
-    io.write("\n- Selected Flags -\n", "-Flag-\t" .. "-Args-\n")
-    for FlagString, unusedValue in pairs(settings.flags) do
-        for i = 1, #settings.flags[FlagString].arguments , 1 do
-            print("", FlagString, settings.flags[FlagString].arguments[i])
-        end
-    end
+    end        
 end
