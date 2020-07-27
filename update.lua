@@ -11,7 +11,7 @@ local settings = {
         ["-v"] = {["passed"] = false, ["verbose_flag"] = "--version"},
         ["--debug"] = {["passed"] = false},
     },
-    ["usage_string"] = "Usage: update [options...]\nFlags:\n-a --all: Updates default scripts.\n-b --branch <branch-name>\n-s --script <script1,script2>\n-v --version: Displays version number.\n",
+    ["usage_string"] = "Usage: update [options...]\nFlags:\n-a --all: Updates default scripts.\n-b --branch <branch-name>\n-s --script <script1,script2>\n-v --version: Displays version number.",
     ["version"] = "2020.7.24.1",
 }
 
@@ -152,6 +152,10 @@ local function handleArguments(args_table)
     end
     if (valid_flag_table["-v"].passed == true) then
         print(settings.version)
+        return
+    end
+    if tableLength(args_table) == 0 then
+        print(settings.usage_string)
         return
     end
     Arguments_Handled = true
