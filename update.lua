@@ -189,10 +189,11 @@ end
 
 local function updateScript(scriptName)
 	local scriptUrl = settings.base_repository_url .. "/" .. settings.branch[1] .."/" .. scriptName .. ".lua"
-	local scriptPath = shell.dir() .. "/" .. scriptName
+	local scriptPath = shell.dir() .. "/" .. scriptName .. ".lua"
 	print("> " .. scriptPath .. "...")
 
-	local remoteScript = http.get(scriptUrl)
+    local remoteScript = http.get(scriptUrl)
+    
 	if not remoteScript then
         error(stdoutError("failed_opening_script", scriptPath))
 	end
@@ -201,9 +202,6 @@ local function updateScript(scriptName)
 	if not localScript then
         error(stdoutError("failed_opening_script", scriptPath))
 	end
-    if remoteScript.readAll() == "404: Not Found" then
-        error(stdoutError("failed_opening_script", scriptUrl))
-    end
 	localScript.write(remoteScript.readAll())
 	localScript.close()
 end
