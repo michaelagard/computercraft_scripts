@@ -76,12 +76,17 @@ local function tunnelSegment(up_count)
         turtle.dig()
         turtle.up()
     end
-    turtle.turnRight(2)
+    turtle.turnRight()
+    turtle.turnRight()
     for i = 1, up_count, 1 do
         turtle.dig()
         turtle.down()
     end
     turtle.turnRight()
+    turtle.dig()
+    turtle.forward()
 end
 
-tunnelSegment(tonumber(settings.area_to_mine["up"]))
+for i = 1, tonumber(settings.area_to_mine["forward"]), 1 do
+    tunnelSegment(tonumber(settings.area_to_mine["up"]))
+end
