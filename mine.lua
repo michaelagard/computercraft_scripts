@@ -1,75 +1,56 @@
-term.setBackgroundColor(colors.blue)
-
-Running = true
-
-MoveResources = {
-    ["forward"] = {["command"] = function() turtle.forward() end, ["count"] = 0, ["reverse"] = "back"},
-    ["back"] = {["command"] = function() turtle.back() end, ["count"] = 0, ["reverse"] = "forward"},
-    ["turnLeft"] = {["command"] = function() turtle.turnLeft() end, ["count"] = 0, ["reverse"] = "turnRight"},
-    ["turnRight"] = {["command"] = function() turtle.turnRight() end, ["count"] = 0, ["reverse"] = "turnLeft"},
-    ["up"] = {["command"] = function() turtle.up() end, ["count"] = 0, ["reverse"] = "down"},
-    ["down"] = {["command"] = function() turtle.down() end, ["count"] = 0, ["reverse"] = "up"},
-    ["MoveSequence"] = {}
+local settings = {
+    ["MoveResources"] = {
+        ["forward"] = {["command"] = function() turtle.forward() end, ["reverse"] = "back"},
+        ["back"] = {["command"] = function() turtle.back() end, ["reverse"] = "forward"},
+        ["turnLeft"] = {["command"] = function() turtle.turnLeft() end, ["reverse"] = "turnRight"},
+        ["turnRight"] = {["command"] = function() turtle.turnRight() end, ["reverse"] = "turnLeft"},
+        ["up"] = {["command"] = function() turtle.up() end, ["reverse"] = "down"},
+        ["down"] = {["command"] = function() turtle.down() end, ["reverse"] = "up"},
+        ["MoveSequence"] = {}
+    },
+    ["currentPOS"] = {["x"] = 0, ["y"] = 0, ["z"] = 0},
+    ["area_to_mine"] = {["height"] = 0, ["width"] = 0, ["depth"] = 0}
 }
 
-TurtleInventory = {}
+local turtle_menu = function ()
+    
+end
 
-function Move(direction, count)
-    for i = 1, count, 1 do
-        MoveResources[direction].command()
-        AddMoveSequence(direction)
-        AddDirectionCount(direction)
+local active = true
+local inventory = {}
+-- construct pattern
+-- traverse pattern
+    -- https://en.wikipedia.org/wiki/Body_relative_direction
+    -- y = forward, -y = backwards
+    -- x = right,   -x = left
+    -- z = up,      -z = down
+-- mine predictably
+-- find shortest path back
+-- refuel when low on fuel
+-- inventory management
+-- menu mockup
+    -- Specify Coordinates
+
+io.write("input height, width, depth\n")
+local xyz_answer = io.read()
+local function addXYZToSettings(xyzanswer)
+    local xyz_table = {}
+    for i in string.gmatch(xyzanswer, "%S+") do
+        table.insert(xyz_table, i)
+    end
+    local count = 0
+    for key, value in pairs(settings.area_to_mine) do
+        count = count + 1
+        settings.area_to_mine[key] = xyz_table[count]
     end
 end
 
-function AddDirectionCount(direction)
-    MoveResources[direction].count = MoveResources[direction].count + 1
+addXYZToSettings(xyz_answer)
+
+for key, value in pairs(settings.area_to_mine) do
+    print(key,value)
 end
 
-function AddMoveSequence(direction)
-    table.insert(MoveResources.MoveSequence, direction)
+local function moveXYZ()
+    settings.MoveResources.forward()
 end
-
-function SimpleReturnToStart()
-    for i = #MoveResources.MoveSequence, 1, -1 do
-        Move(MoveResources[MoveResources.MoveSequence[i]]["reverse"])
-    end
-end
-
-function FuelLevel()
-    return turtle.getFuelLevel()
-end
-
-function Refuel(count)
-    turtle.refuel(count)
-end
-
-function ShouldRefuel()
-    if (FuelLevel() < #MoveResources.MoveSequence + 5) then
-        return true
-    else
-        return false
-    end
-end
-
-function SimpleRefuelSequence()
-    SimpleReturnToStart()
-    Refuel()
-end
-
-function ScanEntireSelfInventory()
-    for i = 1, 16, 1 do
-        local item = turtle.getItemDetail()
-        turtle.select(i)
-        if (not(data == nil)) then
-            TurtleInventory[i] = {["name"] = item.name, ["damage_value"] = item.damage, ["count"] = item.count}
-            print(TurtleInventory[i].name, TurtleInventory[i].damage_value, TurtleInventory[i].count)
-        end
-    end
-end
-
-function ScanCurrentInventorySlot()
-    local item = turtle.getItemDetail()
-end
-
-ScanEntireSelfInventory()
