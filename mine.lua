@@ -52,5 +52,9 @@ for key, value in pairs(settings.area_to_mine) do
 end
 
 local function moveXYZ()
-    settings.MoveResources.forward()
+    for i = 1, settings.area_to_mine.y, 1 do
+        settings.MoveResources.forward.command()    
+    end
 end
+
+moveXYZ()
