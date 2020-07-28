@@ -73,12 +73,18 @@ addXYZToSettings(xyz_answer)
 local function tunnelSegment(up_count)
     turtle.turnRight()
     for i = 1, up_count, 1 do
+        if (up_count < i) then
+            turtle.digUp()
+        end
         turtle.dig()
         turtle.up()
     end
     turtle.turnRight()
     turtle.turnRight()
     for i = 1, up_count, 1 do
+        if (up_count < i) then
+            turtle.digDown()
+        end
         turtle.dig()
         turtle.down()
     end
