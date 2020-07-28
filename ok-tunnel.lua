@@ -49,7 +49,10 @@ end
 
 io.write("input right, forward, up\n")
 local xyz_answer = io.read()
-
+local function turnAround()
+    turtle.turnRight()
+    turtle.turnRight()
+end
 local function addXYZToSettings(xyzanswer)
     local xyz_table = {}
 
@@ -79,8 +82,7 @@ local function tunnelSegment(up_count)
         turtle.dig()
         turtle.up()
     end
-    turtle.turnRight()
-    turtle.turnRight()
+    turnAround()
     for i = 1, up_count, 1 do
         if (up_count < i) then
             turtle.digDown()
