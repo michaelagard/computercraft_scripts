@@ -69,38 +69,19 @@ local function addXYZToSettings(xyzanswer)
     end
 end
 
-
 addXYZToSettings(xyz_answer)
-
-local function traversePath()
-    if move_count ~= movement.forward then
-        movement["forward"].command()        
+local function tunnelSegment(up_count)
+    turtle.turnRight()
+    for i = 1, up_count, 1 do
+        turtle.dig()
+        turtle.up()
     end
-    move_count = move_count + 1
+    turtle.turnRight(2)
+    for i = 1, up_count, 1 do
+        turtle.dig()
+        turtle.down()
+    end
+    turtle.turnRight()
 end
 
-local function fakeTraversePath()
-    if move_count ~= movement.forward then
-        movement["forward"].command()
-    -- else
-    --     break
-    end
-    move_count = move_count + 1
-end
-
-while (move_count <= 100) do
-    for i = 1, tonumber(settings.area_to_mine["right"]), 1 do
-        if move_count == 0 then
-            return
-        else
-            movement.turnRight.command()
-            movement.turnRight.command()
-            move_count = move_count + 1
-        end
-        for i = 1, tonumber(settings.area_to_mine["forward"]), 1 do
-            move_count = move_count + 1
-            movement.forward.command()
-        end
-        break
-    end
-end
+tunnelSegment(tonumber(settings.area_to_mine["up"]))
