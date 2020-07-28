@@ -29,7 +29,7 @@ local function tableLength(table)
         end
     return count
     else
-        return 0
+        error(table, "not a table")
     end
 end
 
@@ -39,6 +39,7 @@ end
     -- y = forward, -y = backwards
     -- x = right,   -x = left
     -- z = up,      -z = down
+        -- move forward/backward, proceed to next row until left/right is exhausted
 -- mine predictably
 -- find shortest path back
 -- refuel when low on fuel
@@ -88,10 +89,18 @@ local function fakeTraversePath()
 end
 
 while (move_count <= 100) do
-    move_count = move_count + 1
-    if move_count <= tonumber(settings.area_to_mine.forward) then
-        traversePath()
-    else
+    for i = 1, tonumber(settings.area_to_mine["right"]), 1 do
+        if move_count == 0 then
+            return
+        else
+            movement.turnRight.command()
+            movement.turnRight.command()
+            move_count = move_count + 1
+        end
+        for i = 1, tonumber(settings.area_to_mine["forward"]), 1 do
+            move_count = move_count + 1
+            movement.forward.command()
+        end
         break
     end
 end
