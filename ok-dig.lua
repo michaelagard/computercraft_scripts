@@ -17,20 +17,20 @@ local function addCountToBlock(count, block)
     print("added ", block, "+1")
 end
 
-local function writeMinedBlocks()
-    local return_message = ""
-    local return_table = {}
-    if #mined_blocks < 1 then
-        return_message ="No blocks have been mined."
-    else
-        io.write("Blocks Mined:\n")
-        for key, value in pairs(mined_blocks) do
-            table.insert(return_table, key .. " " .. value)
-        end
-        return_message = table.concat(return_table, "\n")
-    end
-    return return_message
-end
+-- local function writeMinedBlocks()
+--     local return_message = ""
+--     local return_table = {}
+--     if #mined_blocks < 1 then
+--         return_message ="No blocks have been mined."
+--     else
+--         for key, value in pairs(mined_blocks) do
+--             table.insert(return_table, key .. " " .. value)
+--         end
+--         return_message = table.concat(return_table, "\n")
+--     end
+--     io.write("Blocks Mined:\n")
+--     return return_message
+-- end
 
 while true do
     local success, block_data = turtle.inspect()
@@ -42,10 +42,10 @@ while true do
     if (success == true) then
         message = inspected_block .. " found!"
         turtle.dig()
-        addCountToBlock(1, inspected_block)
+        -- addCountToBlock(1, inspected_block)
         print(block_data.name)
     else
         message = wait_string .. "\n" .. term_string .. "\n" .. current_fuel .. "\n"
     end
-    io.write(writeMinedBlocks())
+    -- io.write(writeMinedBlocks())
 end
