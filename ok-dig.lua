@@ -2,7 +2,7 @@ local message = ""
 local count = 0
 local wait_string = "I'm waiting on a block to mine!"
 local term_string = "Hold CTRL+T to terminate this program."
-local current_fuel = "Current Fuel:" .. turtle.getFuelLevel()
+local current_fuel = "Current Fuel: " .. turtle.getFuelLevel()
 local mined_blocks = {}
 
 local success, block_data = turtle.inspect()
@@ -18,12 +18,12 @@ local function addCountToBlock(count, block)
 end
 
 local function writeMinedBlocks()
-    if not(mined_blocks == {}) then
+    if mined_blocks == {} then
         io.write("No blocks have been mined.")
     else
         io.write("Blocks Mined:\n")
         for block, count in pairs(mined_blocks) do
-            io.write(block .. ": " .. count .. "\n")
+            io.write(block .. ": " .. tostring(count) .. "\n")
         end
     end
 end
