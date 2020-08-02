@@ -22,7 +22,7 @@ local function writeMinedBlocks()
     else
         io.write("Blocks Mined:\n")
         for block, count in pairs(mined_blocks) do
-            io.write(block .. ": " .. tostring(count) .. "\n")
+            io.write(block .. ": " .. count .. "\n")
         end
     end
 end
@@ -38,6 +38,7 @@ while true do
         turtle.dig()
         addCountToBlock(1, inspected_block)
     else
-        message = wait_string .. "\n" .. term_string .. "\n" .. current_fuel .. "\n" .. writeMinedBlocks()
+        message = wait_string .. "\n" .. term_string .. "\n" .. current_fuel
     end
+    writeMinedBlocks()
 end
