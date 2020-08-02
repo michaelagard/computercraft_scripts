@@ -14,11 +14,12 @@ local function addCountToBlock(count, block)
     else
         mined_blocks[block] = mined_blocks[block] + count
     end
+    print("added ", block, "+1")
 end
 
 local function writeMinedBlocks()
-    if mined_blocks == {} then
-        return "No blocks have been mined."
+    if #mined_blocks < 1 then
+        return io.write("No blocks have been mined.")
     else
         io.write("Blocks Mined:\n")
         for block, count in pairs(mined_blocks) do
@@ -32,11 +33,13 @@ while true do
     local inspected_block = block_data.name
     term.setCursorPos(1,1)
     term.clear()
+    
     io.write(message)
     if (success == true) then
         message = inspected_block .. " found!"
         turtle.dig()
         addCountToBlock(1, inspected_block)
+        print(block_data.name)
     else
         message = wait_string .. "\n" .. term_string .. "\n" .. current_fuel
     end
