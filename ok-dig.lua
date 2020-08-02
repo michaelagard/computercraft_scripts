@@ -18,14 +18,18 @@ local function addCountToBlock(count, block)
 end
 
 local function writeMinedBlocks()
+    local return_message = ""
+    local return_table = {}
     if #mined_blocks < 1 then
-        return io.write("No blocks have been mined.")
+        return_message ="No blocks have been mined."
     else
         io.write("Blocks Mined:\n")
-        for block, count in pairs(mined_blocks) do
-            io.write(block .. ": " .. count .. "\n")
+        for key, value in pairs(mined_blocks) do
+            table.insert(return_table, key .. " " .. value)
         end
+        return_message = table.concat(return_table, "\n")
     end
+    return return_message
 end
 
 while true do
@@ -41,7 +45,7 @@ while true do
         addCountToBlock(1, inspected_block)
         print(block_data.name)
     else
-        message = wait_string .. "\n" .. term_string .. "\n" .. current_fuel
+        message = wait_string .. "\n" .. term_string .. "\n" .. current_fuel .. "\n"
     end
-    writeMinedBlocks()
+    io.write(writeMinedBlocks())
 end
