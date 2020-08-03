@@ -15,12 +15,20 @@ local function addCountToBlock(count, raw_block)
     end
 end
 
+local function formattedBlockTable(block_table)
+    local formatted_block_table = {}
+    for block_name, block_count in pairs(block_table) do
+        table.insert(formatted_block_table, block_name .. ": " .. tostring(block_count))
+    end
+    return formattedBlockTable
+end
+
 local function writeMinedBlocks()
     local return_message = ""
     if #mined_blocks < 1 then
         return_message ="No blocks have been mined."
     else
-        return_message = table.concat(mined_blocks, "\n")
+        return_message = table.concat(formattedBlockTable(mined_blocks), "\n")
     end
     return return_message
 end
