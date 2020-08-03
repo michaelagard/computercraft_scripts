@@ -1,5 +1,5 @@
 local args = {...}
-local mined_count = 1
+local mined_count = 0
 local message = ""
 local count = 0
 local wait_string = "STATUS: Observing.\n"
@@ -30,12 +30,16 @@ local function writeMinedBlocks()
     if #mined_blocks < 1 then
         return_message ="No blocks have been mined."
     else
-        return table.concat(formattedBlockTable(mined_blocks), "\n")
+        return_message = "Blockes Mined:\n" .. table.concat(formattedBlockTable(mined_blocks), "\n")
     end
     return return_message
 end
 
-while mined_count > args[1] do
+if (tonumber(args[1]) == nil) then
+    args[1] = 10000
+end
+
+while mined_count < tonumber(args[1]) do
     local success, block_data = turtle.inspect()
     local inspected_block = block_data.name
     term.setCursorPos(1,1)
@@ -45,7 +49,8 @@ while mined_count > args[1] do
         message = inspected_block .. " found!"
         turtle.dig()
         addCountToBlock(1, inspected_block)
+        mined_count = mined_count + 1
     else
-        message = wait_string .. term_string .. current_fuel .. "Blocks mined:\n" .. writeMinedBlocks()
+        message = wait_string .. term_string .. current_fuel .. writeMinedBlocks()
     end
 end
