@@ -6,7 +6,7 @@ local current_fuel = "Current Fuel: " .. turtle.getFuelLevel() .. "\n"
 local mined_blocks = {}
 
 local function addCountToBlock(count, raw_block)
-    local formatted_block_name = string.match(raw_block, "(?<=:).*")
+    local formatted_block_name = string.match(raw_block, "(:.*)")
     if (mined_blocks[formatted_block_name] == nil) then
         table.insert(mined_blocks, formatted_block_name)
         mined_blocks[formatted_block_name] = count
