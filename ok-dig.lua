@@ -8,7 +8,6 @@ local mined_blocks = {}
 
 local function addCountToBlock(block_name)
     if (mined_blocks[block_name] == nil) then
-        table.insert(mined_blocks, block_name)
         mined_blocks[block_name] = 1
     else
         mined_blocks[block_name] = mined_blocks[block_name] + 1
