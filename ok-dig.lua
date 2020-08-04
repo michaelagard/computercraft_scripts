@@ -30,7 +30,7 @@ local function writeMinedBlocks()
     if #mined_blocks < 1 then
         return_message ="No blocks have been mined."
     else
-        return_message = "Blockes Mined:\n" .. table.concat(formattedBlockTable(mined_blocks), "\n")
+        return_message = "Blockes Mined:\n" .. "A test!"
     end
     return return_message
 end
