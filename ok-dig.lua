@@ -1,19 +1,17 @@
 local args = {...}
 local mined_count = 0
 local message = ""
-local count = 0
 local wait_string = "STATUS: Observing.\n"
 local term_string = "Hold CTRL+T to terminate.\n"
 local current_fuel = "Current Fuel: " .. turtle.getFuelLevel() .. "\n"
 local mined_blocks = {}
 
-local function addCountToBlock(count, raw_block)
-    -- local formatted_block_name = string.match(raw_block, "(:.*)")
-    if (mined_blocks[raw_block] == nil) then
-        table.insert(mined_blocks, raw_block)
-        mined_blocks[raw_block] = count
+local function addCountToBlock(block_name)
+    if (mined_blocks[block_name] == nil) then
+        table.insert(mined_blocks, block_name)
+        mined_blocks[block_name] = 1
     else
-        mined_blocks[raw_block] = mined_blocks[raw_block] + count
+        mined_blocks[block_name] = mined_blocks[block_name] + 1
     end
 end
 
@@ -30,7 +28,7 @@ local function writeMinedBlocks()
     if #mined_blocks < 1 then
         return_message ="No blocks have been mined."
     else
-        return_message = "Blockes Mined:\n" .. "A test!"
+        return_message = "Blockes Mined:\n" .. table.concat(formattedBlockTable(mined_blocks), "\n")
     end
     return return_message
 end
@@ -48,7 +46,7 @@ while mined_count < tonumber(args[1]) do
     if (success == true) then
         message = inspected_block .. " found!"
         turtle.dig()
-        addCountToBlock(1, inspected_block)
+        addCountToBlock(inspected_block)
         mined_count = mined_count + 1
     else
         message = wait_string .. term_string .. current_fuel .. writeMinedBlocks()
