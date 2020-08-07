@@ -44,7 +44,7 @@ local function writeMinedBlocks()
     return return_message
 end
 
-if (type(args[1]) == "number") then
+if not(type(args[1]) == "number") then
     args[1] = 1000000
 end
 
@@ -64,6 +64,6 @@ while mined_count < tonumber(args[1]) do
         addCountToBlock(inspected_block)
         mined_count = mined_count + 1
     else
-        message = wait_string .. term_string .. current_fuel .. writeMinedBlocks()
+        message = wait_string .. term_string  .. writeMinedBlocks()
     end
 end
