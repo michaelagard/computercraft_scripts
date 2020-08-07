@@ -19,7 +19,7 @@ end
 
 local function addCountToBlock(block_name)
     string.sub(block_name, 2)
-    local formatted_block_name = string.match(block_name, ":%a*"):sub(2)
+    local formatted_block_name = string.match(block_name, ":.*"):sub(2)
     if (mined_blocks[formatted_block_name] == nil) then
         mined_blocks[formatted_block_name] = 1
     else
