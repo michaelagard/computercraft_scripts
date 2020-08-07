@@ -6,19 +6,20 @@ local term_string = "Hold CTRL+T to terminate.\n"
 local mined_blocks = {}
 
 local function tableLength(table)
-    local count = 0
+    local table_count = 0
     if type(table) == "table" then
         for key, value in pairs(table) do
-            count = count + 1
+            table_count = table_count + 1
         end
-    return count
+    return table_count
     else
         return 0
     end
 end
 
 local function addCountToBlock(block_name)
-    local formatted_block_name = string.sub(block_name, 2)
+    string.sub(block_name, 2)
+    local formatted_block_name = string.match(block_name, ":%a*"):sub(2)
     if (mined_blocks[formatted_block_name] == nil) then
         mined_blocks[formatted_block_name] = 1
     else
