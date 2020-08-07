@@ -18,9 +18,8 @@ local function tableLength(table)
 end
 
 local function addCountToBlock(block_name)
-    string.sub(block_name, 2)
     local formatted_block_name = string.match(block_name, ":.*"):sub(2):gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end):gsub("_", " ")
-    
+
     if (mined_blocks[formatted_block_name] == nil) then
         mined_blocks[formatted_block_name] = 1
     else
