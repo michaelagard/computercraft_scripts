@@ -3,7 +3,6 @@ local mined_count = 0
 local message = ""
 local wait_string = "STATUS: Observing.\n"
 local term_string = "Hold CTRL+T to terminate.\n"
-local current_fuel = "Current Fuel: " .. turtle.getFuelLevel() .. "\n"
 local mined_blocks = {}
 
 local function tableLength(table)
@@ -19,10 +18,11 @@ local function tableLength(table)
 end
 
 local function addCountToBlock(block_name)
-    if (mined_blocks[block_name] == nil) then
-        mined_blocks[block_name] = 1
+    local formatted_block_name = string.sub(block_name, 2)
+    if (mined_blocks[formatted_block_name] == nil) then
+        mined_blocks[formatted_block_name] = 1
     else
-        mined_blocks[block_name] = mined_blocks[block_name] + 1
+        mined_blocks[formatted_block_name] = mined_blocks[formatted_block_name] + 1
     end
 end
 
@@ -44,7 +44,7 @@ local function writeMinedBlocks()
     return return_message
 end
 
-if (args[1] == nil) then
+if (type(args[1]) == "number") then
     args[1] = 1000000
 end
 
