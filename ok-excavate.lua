@@ -1,7 +1,7 @@
 local args = {...}
 
 local time = os.time()
-local formattedTime = textutils.formatTime(time, true)
+local formatted_time = textutils.formatTime(time, true)
 
 local function tableLength(table)
     local table_count = 0
@@ -14,100 +14,53 @@ local function tableLength(table)
     return 0
 end
 local debug = true
-Move = {
-    ["forward"] = {["command"] = 
-        function()
-            turtle.forward()
-            Move.forward.count = Move.forward.count + 1
-            if debug then
-                print("[" .. formattedTime .. "] " .. "ok-excavate: Moving Forward")
-            end
-        end,
-        ["count"] = 0, ["reverse"] = "back"},
-    ["back"] = {["command"] =
-        function()
-            turtle.back()
-            Move.back.count = Move.back.count + 1
-            if debug then
-                print("[" .. formattedTime .. "] " .. "ok-excavate: Moving Back")
-            end
-        end,
-        ["count"] = 0, ["reverse"] = "forward"},
-    ["turnLeft"] = {["command"] =
-        function()
-            turtle.turnLeft()
-            Move.turnLeft.count = Move.turnLeft.count + 1
-            if (Move.facing == 0) then
-                Move.facing = 4
-            end
-            if debug then
-                print("[" .. formattedTime .. "] " .. "ok-excavate: Turning Left")
-                print("[" .. formattedTime .. "] " .. "ok-excavate: Facing:", Move.facing)
-            end
-        end,
-        ["count"] = 0, ["reverse"] = "turnRight"},
-    ["turnRight"] = {["command"] =
-        function()
-            turtle.turnRight()
-            Move.turnRight.count = Move.turnRight.count + 1
-            if (Move.facing == 4) then
-                Move.facing = 0
-            end
-            Move.facing = Move.facing + 1
-            if debug then
-                print("[" .. formattedTime .. "] " .. "ok-excavate: Turning Right")
-                print("[" .. formattedTime .. "] " .. "ok-excavate: Facing:", Move.facing)
-            end
-        end,
-        ["count"] = 0, ["reverse"] = "turnLeft"},
-    ["up"] = {["command"] =
-        function()
-            turtle.up()
-            Move.up.count = Move.up.count + 1
-            if debug then
-                print("[" .. formattedTime .. "] " .. "ok-excavate: Moving Up")
-            end
-        end,
-        ["count"] = 0, ["reverse"] = "down"},
-    ["down"] = {["command"] =
-        function()
-            turtle.down()
-            Move.down.count = Move.down.count + 1
-            if debug then
-                print("[" .. formattedTime .. "] " .. "ok-excavate: Moving Down")
-            end
-        end,
-        ["count"] = 0, ["reverse"] = "up"},
-    ["dig"] = {["command"] =
-        function ()
-            if (turtle.detect()) then
-                turtle.dig()
-                Move.dig.count = Move.dig.count + 1
-                if debug then
-                    print("[" .. formattedTime .. "] " .. "ok-excavate: Digging")
-                end
-            end
-        end, ["count"] = 0},
-    ["move_sequence"] = {},
-    ["facing"] = 0
-}
 
 Settings = {
-    --uses body relative directions
-    ["arg_x"] = 1, --right/left
-    ["arg_y"] = 1, --forward/backwards
-    ["arg_z"] = 1, --up/down
     ["total_args"] = tableLength(args),
+    --uses body relative directions
+    ["arg_x"] = 1,  --right/left
+    ["arg_y"] = 1,  --forward/backwards
+    ["arg_z"] = 1,  --up/down
+    ["cur_pos"] = {
+        ["x"] = 0,
+        ["y"] = 0,
+        ["z"] = 0,
+    },
+    ["cur_face"] = 0,   -- 0 = +y | 1 = +x | 2 = -y | 3 = -x
+    ["dig_count"] = 0,
 }
-
-local function turn(x_iteration)
-    if (x_iteration % 2 == 0 or x_iteration == 0) then
-        Move.turnRight.command()
-    else
-        Move.turnLeft.command()
+local function moveDirection(direction)
+    if (Settings.cur_face == 0) then
+        Settings.cur_pos.y = Settings.cur_pos.y + 1
+    elseif (Settings.cur_face == 1) then
+        Settings.cur_pos.x = Settings.cur_pos.x + 1
+    elseif Settings.cur_face == 2 then
+        Settings.cur_pos.y = Settings.cur_pos.y - 1
+    elseif (Settings.cur_face == 3) then
+        Settings.cur_pos.x = Settings.cur_pos.x - 1
+    end
+    Move[direction].count = Move[direction].count + 1
+    turtle[direction]()
+    if debug then
+        print("[" .. formatted_time .. "] " .. "ok-excavate: Moving Forward")
     end
 end
-
+local function turn(x_iteration)
+    if (x_iteration % 2 == 0 or x_iteration == 0) then
+        moveDirection("turnRight")
+    else
+        moveDirection("turnLeft")
+    end
+end
+local function dig(arg1, arg2, arg3)
+    if (turtle.detect()) then
+        turtle.dig()
+        Settings.dig_count = Settings.dig_count + 1
+        if debug then
+            print("[" .. formatted_time .. "] " .. "ok-excavate: Digging")
+        end
+    end
+end
 local function handleArguments()
     if tableLength(args) > 0 then
     for i = 1, tableLength(args), 1 do
@@ -153,13 +106,15 @@ local function calculateRequiredFuel()
 end
 
 local function returnToStart(x, y, z)
-    for i = 1, z, 1 do
-        -- Move.up.command()
+    if (z > 1) then
+        for i_z = 1, z, 1 do
+            moveDirection("up")
+        end
     end
-    for i = 1, x, 1 do
-        Move.forward.command()
+    for i_x = 1, x, 1 do
+        moveDirection("forward")
     end
-    for i = 1, y, 1 do
+    for i_y = 1, y, 1 do
         turn(x)
     end
 end
@@ -169,13 +124,13 @@ local function minePlane()
     for iX = 1, Settings.arg_x, 1 do
 
         for iY = 1, Settings.arg_y, 1 do
-            Move.dig.command()
-            Move.forward.command()
+            dig()
+            moveDirection("forward")
         end
         if (not(iX == Settings.arg_x)) then
             turn(iX)
-            Move.dig.command()
-            Move.forward.command()
+            dig()
+            moveDirection("forward")
             turn(iX)
         end
     end
