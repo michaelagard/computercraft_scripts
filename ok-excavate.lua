@@ -1,7 +1,7 @@
 local args = {...}
 
 local time = os.time()
-local formattedTime = textutils.formatTime(time, false)
+local formattedTime = textutils.formatTime(time, true)
 
 local function tableLength(table)
     local table_count = 0
@@ -142,7 +142,7 @@ local function calculateRequiredFuel()
     elseif tableLength(args) == 3 then
         required_fuel = ((Settings.arg_y * Settings.arg_x * Settings.arg_z) * 4) - fuel_level
     else
-        error("Usage: ok-excavate [y] [x] [z]\n[y] - fowards | [x] left | [z] down")
+        print("Usage: ok-excavate [y] [x] [z]\n[y] - fowards | [x] left | [z] down")
     end
     print("calculateRequiredFuel(): ", required_fuel)
     if (required_fuel > 0) then
