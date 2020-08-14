@@ -150,13 +150,13 @@ local function calculateRequiredFuel()
 end
 
 local function returnToStart(x, y, z)
+    for i = 1, z, 1 do
+        Move.up.command()
+    end
     for i = 1, x, 1 do
-        Move.
+        Move.forward.command()
     end
     for i = 1, y, 1 do
-        
-    end
-    for i = 1, z, 1 do
         
     end
 end
@@ -176,6 +176,7 @@ local function minePlane()
             turn(iX)
         end
     end
+    returnToStart(Settings.arg_x, Settings.arg_y, Settings.arg_z)
 end
 handleArguments()
 calculateRequiredFuel()
