@@ -79,9 +79,9 @@ Move = {
 
 Settings = {
     --uses body relative directions
-    ["arg_x"] = 0, --right/left
-    ["arg_y"] = 0, --forward/backwards
-    ["arg_z"] = 0, --up/down
+    ["arg_x"] = 1, --right/left
+    ["arg_y"] = 1, --forward/backwards
+    ["arg_z"] = 1, --up/down
     ["total_args"] = tableLength(args),
 }
 
@@ -138,19 +138,26 @@ local function minePlane()
             if(turtle.detect()) then
                 Move.dig.command()
             end
-
-            print("Moving Forward")
             Move.forward.command()
         end
         if (not(iX == Settings.arg_x)) then
-            Move.turnRight.command()
-    
+            if (iX % 2 == 0 or iX == 0) then
+                Move.turnRight.command()
+            else
+                Move.turnLeft.command()
+            end
+            
             if(turtle.detect()) then
                 Move.dig.command()
             end
     
             Move.forward.command()
-            Move.turnRight.command()
+
+            if (iX % 2 == 0 or iX == 0) then
+                Move.turnRight.command()
+            else
+                Move.turnLeft.command()
+            end
         end
     end
 end
