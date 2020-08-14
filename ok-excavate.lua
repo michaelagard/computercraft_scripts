@@ -18,9 +18,9 @@ local debug = true
 Settings = {
     ["total_args"] = tableLength(args),
     --uses body relative directions
-    ["arg_x"] = 1,  --right/left
-    ["arg_y"] = 1,  --forward/backwards
-    ["arg_z"] = 1,  --up/down
+    ["arg_x"] = 1,      --right/left
+    ["arg_y"] = 1,      --forward/backwards
+    ["arg_z"] = 1,      --up/down
     ["cur_pos"] = {
         ["x"] = 0,
         ["y"] = 0,
@@ -49,9 +49,22 @@ local function moveDirection(direction)
 end
 local function turn(x_iteration)
     if (x_iteration % 2 == 0 or x_iteration == 0) then
+        if (Settings.cur_face > 3) then
+            Settings.cur_face = 0
+        else
+            Settings.cur_face = Settings.cur_face + 1
+        end
         moveDirection("turnRight")
     else
+        if (Settings.cur_face < 0) then
+            Settings.cur_face = 3
+        else
+            Settings.cur_face = Settings.cur_face - 1
+        end
         moveDirection("turnLeft")
+    end
+    if (debug) then
+        print(formatted_time .. "ok-e: turning / face: " .. tostring(Settings.cur_face))
     end
 end
 local function dig()
