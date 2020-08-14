@@ -1,5 +1,8 @@
 local args = {...}
 
+local time = os.time()
+local formattedTime = textutils.formatTime(time, false)
+
 local function tableLength(table)
     local table_count = 0
     if (type(table) == "table") then
@@ -17,7 +20,7 @@ Move = {
             turtle.forward()
             Move.forward.count = Move.forward.count + 1
             if debug then
-                print("ok-excavate: Moving Forward")
+                print("[" .. formattedTime .. "] " .. "ok-excavate: Moving Forward")
             end
         end,
         ["count"] = 0, ["reverse"] = "back"},
@@ -26,7 +29,7 @@ Move = {
             turtle.back()
             Move.back.count = Move.back.count + 1
             if debug then
-                print("ok-excavate: Moving Back")
+                print("[" .. formattedTime .. "] " .. "ok-excavate: Moving Back")
             end
         end,
         ["count"] = 0, ["reverse"] = "forward"},
@@ -38,8 +41,8 @@ Move = {
                 Move.facing = 4
             end
             if debug then
-                print("ok-excavate: Turning Left")
-                print("ok-excavate: Facing:", Move.facing)
+                print("[" .. formattedTime .. "] " .. "ok-excavate: Turning Left")
+                print("[" .. formattedTime .. "] " .. "ok-excavate: Facing:", Move.facing)
             end
         end,
         ["count"] = 0, ["reverse"] = "turnRight"},
@@ -52,8 +55,8 @@ Move = {
             end
             Move.facing = Move.facing + 1
             if debug then
-                print("ok-excavate: Turning Right")
-                print("ok-excavate: Facing:", Move.facing)
+                print("[" .. formattedTime .. "] " .. "ok-excavate: Turning Right")
+                print("[" .. formattedTime .. "] " .. "ok-excavate: Facing:", Move.facing)
             end
         end,
         ["count"] = 0, ["reverse"] = "turnLeft"},
@@ -62,7 +65,7 @@ Move = {
             turtle.up()
             Move.up.count = Move.up.count + 1
             if debug then
-                print("ok-excavate: Moving Up")
+                print("[" .. formattedTime .. "] " .. "ok-excavate: Moving Up")
             end
         end,
         ["count"] = 0, ["reverse"] = "down"},
@@ -71,7 +74,7 @@ Move = {
             turtle.down()
             Move.down.count = Move.down.count + 1
             if debug then
-                print("ok-excavate: Moving Down")
+                print("[" .. formattedTime .. "] " .. "ok-excavate: Moving Down")
             end
         end,
         ["count"] = 0, ["reverse"] = "up"},
@@ -81,7 +84,7 @@ Move = {
                 turtle.dig()
                 Move.dig.count = Move.dig.count + 1
                 if debug then
-                    print("ok-excavate: Digging")
+                    print("[" .. formattedTime .. "] " .. "ok-excavate: Digging")
                 end
             end
         end, ["count"] = 0},
@@ -139,7 +142,7 @@ local function calculateRequiredFuel()
     elseif tableLength(args) == 3 then
         required_fuel = ((Settings.arg_y * Settings.arg_x * Settings.arg_z) * 4) - fuel_level
     else
-        error("No args detected.")
+        error("Usage: ok-excavate [y] [x] [z]\n[y] - fowards | [x] left | [z] down")
     end
     print("calculateRequiredFuel(): ", required_fuel)
     if (required_fuel > 0) then
@@ -151,13 +154,13 @@ end
 
 local function returnToStart(x, y, z)
     for i = 1, z, 1 do
-        Move.up.command()
+        -- Move.up.command()
     end
     for i = 1, x, 1 do
         Move.forward.command()
     end
     for i = 1, y, 1 do
-        
+        turn(x)
     end
 end
 
