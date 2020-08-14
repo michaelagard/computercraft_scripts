@@ -1,7 +1,7 @@
 local args = {...}
 
 local time = os.time()
-local formatted_time = textutils.formatTime(time, true)
+local formatted_time = "[" .. textutils.formatTime(time, true) .. "] "
 
 local function tableLength(table)
     local table_count = 0
@@ -26,9 +26,11 @@ Settings = {
         ["y"] = 0,
         ["z"] = 0,
     },
+    ["move_count"] = 0,
     ["cur_face"] = 0,   -- 0 = +y | 1 = +x | 2 = -y | 3 = -x
     ["dig_count"] = 0,
 }
+
 local function moveDirection(direction)
     if (Settings.cur_face == 0) then
         Settings.cur_pos.y = Settings.cur_pos.y + 1
@@ -39,10 +41,10 @@ local function moveDirection(direction)
     elseif (Settings.cur_face == 3) then
         Settings.cur_pos.x = Settings.cur_pos.x - 1
     end
-    Move[direction].count = Move[direction].count + 1
+    Settings["move_count"] = Settings["move_count"] + 1
     turtle[direction]()
     if debug then
-        print("[" .. formatted_time .. "] " .. "ok-excavate: Moving Forward")
+        print(formatted_time .. "ok-excavate: Moving Forward " .. Settings.cur_pos.x, Settings.cur_pos.y, Settings.cur_pos.z)
     end
 end
 local function turn(x_iteration)
@@ -52,12 +54,12 @@ local function turn(x_iteration)
         moveDirection("turnLeft")
     end
 end
-local function dig(arg1, arg2, arg3)
+local function dig()
     if (turtle.detect()) then
         turtle.dig()
         Settings.dig_count = Settings.dig_count + 1
         if debug then
-            print("[" .. formatted_time .. "] " .. "ok-excavate: Digging")
+            print(formatted_time .. "ok-excavate: Digging")
         end
     end
 end
@@ -105,18 +107,8 @@ local function calculateRequiredFuel()
     end
 end
 
-local function returnToStart(x, y, z)
-    if (z > 1) then
-        for i_z = 1, z, 1 do
-            moveDirection("up")
-        end
-    end
-    for i_x = 1, x, 1 do
-        moveDirection("forward")
-    end
-    for i_y = 1, y, 1 do
-        turn(x)
-    end
+local function returnToStart(current_x, current_y, current_z)
+
 end
 
 local function minePlane()
