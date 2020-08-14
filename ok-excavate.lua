@@ -10,14 +10,70 @@ local function tableLength(table)
     end
     return 0
 end
-
+local debug = true
 Move = {
-    ["forward"] = {["command"] = function() turtle.forward(); Move.forward.count = Move.forward.count + 1; end, ["count"] = 0, ["reverse"] = "back"},
-    ["back"] = {["command"] = function() turtle.back() end, ["count"] = 0, ["reverse"] = "forward"},
-    ["turnLeft"] = {["command"] = function() turtle.turnLeft() end, ["count"] = 0, ["reverse"] = "turnRight"},
-    ["turnRight"] = {["command"] = function() turtle.turnRight() end, ["count"] = 0, ["reverse"] = "turnLeft"},
-    ["up"] = {["command"] = function() turtle.up() end, ["count"] = 0, ["reverse"] = "down"},
-    ["down"] = {["command"] = function() turtle.down() end, ["count"] = 0, ["reverse"] = "up"},
+    ["forward"] = {["command"] = 
+        function()
+            turtle.forward()
+            Move.forward.count = Move.forward.count + 1
+            if debug then
+                print("ok-excavate: Moving Forward")
+            end
+        end,
+        ["count"] = 0, ["reverse"] = "back"},
+    ["back"] = {["command"] =
+        function()
+            turtle.back()
+            Move.back.count = Move.back.count + 1
+            if debug then
+                print("ok-excavate: Moving Back")
+            end
+        end,
+        ["count"] = 0, ["reverse"] = "forward"},
+    ["turnLeft"] = {["command"] =
+        function()
+            turtle.turnLeft()
+            Move.turnLeft.count = Move.turnLeft.count + 1
+            if debug then
+                print("ok-excavate: Turning Left")
+            end
+        end,
+        ["count"] = 0, ["reverse"] = "turnRight"},
+    ["turnRight"] = {["command"] =
+        function()
+            turtle.turnRight()
+            Move.turnRight.count = Move.turnRight.count + 1
+            if debug then
+                print("ok-excavate: Turning Right")
+            end
+        end,
+        ["count"] = 0, ["reverse"] = "turnLeft"},
+    ["up"] = {["command"] =
+        function()
+            turtle.up()
+            Move.up.count = Move.up.count + 1
+            if debug then
+                print("ok-excavate: Moving Up")
+            end
+        end,
+        ["count"] = 0, ["reverse"] = "down"},
+    ["down"] = {["command"] =
+        function()
+            turtle.down()
+            Move.down.count = Move.down.count + 1
+            if debug then
+                print("ok-excavate: Moving Down")
+            end
+        end,
+        ["count"] = 0, ["reverse"] = "up"},
+    ["dig"] = {["command"] =
+        function ()
+            turtle.dig()
+            Move.dig.count = Move.dig.count + 1
+            if debug then
+                print("ok-excavate: Digging")
+            end
+        end, ["count"] = 0},
     ["MoveSequence"] = {}
 }
 
@@ -80,16 +136,17 @@ local function minePlane()
         for iY = 1, Settings.arg_y, 1 do
 
             if(turtle.detect()) then
-                turtle.dig()
+                Move.dig.command()
             end
 
+            print("Moving Forward")
             Move.forward.command()
         end
         if (not(iX == Settings.arg_x)) then
             Move.turnRight.command()
     
             if(turtle.detect()) then
-                turtle.dig()
+                Move.dig.command()
             end
     
             Move.forward.command()
