@@ -44,7 +44,7 @@ local function moveDirection(direction)
     Settings["move_count"] = Settings["move_count"] + 1
     turtle[direction]()
     if debug then
-        print(formatted_time .. "ok-excavate: Moving Forward " .. Settings.cur_pos.x, Settings.cur_pos.y, Settings.cur_pos.z)
+        print(formatted_time .. "ok-e: Forward " .. Settings.cur_pos.x, Settings.cur_pos.y, Settings.cur_pos.z)
     end
 end
 local function turn(x_iteration)
@@ -59,7 +59,7 @@ local function dig()
         turtle.dig()
         Settings.dig_count = Settings.dig_count + 1
         if debug then
-            print(formatted_time .. "ok-excavate: Digging")
+            print(formatted_time .. "ok-e: Digging")
         end
     end
 end
