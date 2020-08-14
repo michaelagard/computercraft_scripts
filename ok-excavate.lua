@@ -65,6 +65,7 @@ local function calculateRequiredFuel()
     else
         error("No args detected.")
     end
+    print("calculateRequiredFuel(): ", required_fuel)
     if (required_fuel > 0) then
         return required_fuel
     else
@@ -72,7 +73,7 @@ local function calculateRequiredFuel()
     end
 end
 
-local function traverseLevel()
+local function minePlane()
 
     for iX = 1, Settings.arg_x, 1 do
 
@@ -97,4 +98,5 @@ local function traverseLevel()
     end
 end
 handleArguments()
-print(calculateRequiredFuel())
+calculateRequiredFuel()
+minePlane()
