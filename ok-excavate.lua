@@ -34,8 +34,12 @@ Move = {
         function()
             turtle.turnLeft()
             Move.turnLeft.count = Move.turnLeft.count + 1
+            if (Move.facing == 0) then
+                Move.facing = 4
+            end
             if debug then
                 print("ok-excavate: Turning Left")
+                print("ok-excavate: Facing:", Move.facing)
             end
         end,
         ["count"] = 0, ["reverse"] = "turnRight"},
@@ -43,8 +47,13 @@ Move = {
         function()
             turtle.turnRight()
             Move.turnRight.count = Move.turnRight.count + 1
+            if (Move.facing == 4) then
+                Move.facing = 0
+            end
+            Move.facing = Move.facing + 1
             if debug then
                 print("ok-excavate: Turning Right")
+                print("ok-excavate: Facing:", Move.facing)
             end
         end,
         ["count"] = 0, ["reverse"] = "turnLeft"},
@@ -68,13 +77,16 @@ Move = {
         ["count"] = 0, ["reverse"] = "up"},
     ["dig"] = {["command"] =
         function ()
-            turtle.dig()
-            Move.dig.count = Move.dig.count + 1
-            if debug then
-                print("ok-excavate: Digging")
+            if (turtle.detect()) then
+                turtle.dig()
+                Move.dig.count = Move.dig.count + 1
+                if debug then
+                    print("ok-excavate: Digging")
+                end
             end
         end, ["count"] = 0},
-    ["MoveSequence"] = {}
+    ["move_sequence"] = {},
+    ["facing"] = 0
 }
 
 Settings = {
@@ -84,6 +96,14 @@ Settings = {
     ["arg_z"] = 1, --up/down
     ["total_args"] = tableLength(args),
 }
+
+local function turn(x_iteration)
+    if (x_iteration % 2 == 0 or x_iteration == 0) then
+        Move.turnRight.command()
+    else
+        Move.turnLeft.command()
+    end
+end
 
 local function handleArguments()
     if tableLength(args) > 0 then
@@ -129,35 +149,31 @@ local function calculateRequiredFuel()
     end
 end
 
+local function returnToStart(x, y, z)
+    for i = 1, x, 1 do
+        Move.
+    end
+    for i = 1, y, 1 do
+        
+    end
+    for i = 1, z, 1 do
+        
+    end
+end
+
 local function minePlane()
 
     for iX = 1, Settings.arg_x, 1 do
 
         for iY = 1, Settings.arg_y, 1 do
-
-            if(turtle.detect()) then
-                Move.dig.command()
-            end
+            Move.dig.command()
             Move.forward.command()
         end
         if (not(iX == Settings.arg_x)) then
-            if (iX % 2 == 0 or iX == 0) then
-                Move.turnRight.command()
-            else
-                Move.turnLeft.command()
-            end
-            
-            if(turtle.detect()) then
-                Move.dig.command()
-            end
-    
+            turn(iX)
+            Move.dig.command()
             Move.forward.command()
-
-            if (iX % 2 == 0 or iX == 0) then
-                Move.turnRight.command()
-            else
-                Move.turnLeft.command()
-            end
+            turn(iX)
         end
     end
 end
