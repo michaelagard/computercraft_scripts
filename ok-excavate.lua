@@ -34,9 +34,9 @@ local function handleArguments()
     for i = 1, tableLength(args), 1 do
         if (type(tonumber(args[i])) == "number") then
             if (i == 1) then
-                Settings.arg_x = tonumber(args[i])
-            elseif (i == 2) then
                 Settings.arg_y = tonumber(args[i])
+            elseif (i == 2) then
+                Settings.arg_x = tonumber(args[i])
             elseif (i == 3) then
                 Settings.arg_z = tonumber(args[i])
             else
@@ -51,17 +51,24 @@ local function handleArguments()
     end
 end
 
-local fuel_level = turtle.getFuelLevel()
+
 
 local function calculateRequiredFuel()
+    local fuel_level = turtle.getFuelLevel()
+    local required_fuel = 0
     if tableLength(args) == 1 then
-        return Settings.arg_y * 4
+        required_fuel = (Settings.arg_y * 4) - fuel_level
     elseif tableLength(args) == 2 then
-        return (Settings.args_y * Settings.args_x) * 4
+        required_fuel = ((Settings.arg_y * Settings.arg_x) * 4) - fuel_level
     elseif tableLength(args) == 3 then
-        return (Settings.args_y * Settings.args_x * Settings.arg_z) * 4
+        required_fuel = ((Settings.arg_y * Settings.arg_x * Settings.arg_z) * 4) - fuel_level
     else
         error("No args detected.")
+    end
+    if (required_fuel > 0) then
+        return required_fuel
+    else
+        return 0
     end
 end
 
@@ -89,6 +96,5 @@ local function traverseLevel()
         end
     end
 end
-print(textutils.serializeJSON(args))
 handleArguments()
 print(calculateRequiredFuel())
