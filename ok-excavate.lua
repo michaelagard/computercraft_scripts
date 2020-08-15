@@ -170,10 +170,12 @@ local function excavate(x, y, z)
         if (i_row < x) then
             if (i_row % 2 == 0) then
                 move("left")
+                dig("forward")
                 move("forward")
                 move("left")
             else
                 move("right")
+                dig("forward")
                 move("forward")
                 move("right")
             end
