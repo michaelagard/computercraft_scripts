@@ -184,6 +184,7 @@ local function excavate(x_dim, y_dim, z_dim)
             end
         end
         if (z_dim > 1) then
+            dig()
             moveDirection("down")
         end
     end
