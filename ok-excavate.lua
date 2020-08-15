@@ -3,9 +3,9 @@ local args = {...}
 
 local settings = {
     --uses body relative directions 0 = +y | 1 = +x | 2 = -y | 3 = -x
-    ["arg_x"] = 1,      --right/left
-    ["arg_y"] = 1,      --forward/backwards
-    ["arg_z"] = 1,      --up/down
+    ["arg_x"] = 0,      --right/left
+    ["arg_y"] = 0,      --forward/backwards
+    ["arg_z"] = 0,      --up/down
     ["current_pos"] = {
         ["x"] = 0,
         ["y"] = 0,
@@ -157,43 +157,29 @@ end
 
 
 local function excavate(x, y, z)
-    for i_z = 1, z, 1 do
-        if i_z > 1 then
+    for depth = 0, z, 1 do
+        if depth > 0 then
             dig("down")
             move("down")
             move("turnRight")
             move("turnRight")
         end
-        for i_x = 1, x, 1 do
-            for i_y = 2, y, 1 do
-                dig("forward")
-                move("forward")
+        for row = 1, x, 1 do
+            for column = 1, y, 1 do
+                if (column < y) then
+                    dig("forward")
+                    move("forward")
+                end
             end
-            if (x > 1 and i_x < x) then
-                if not(i_z % 2 == 0) then --check if z level is even or or equates to 1
-                    if not(i_x % 2 == 0) then --check if row is not divisible by 2
-                        move("turnRight")
-                        dig("forward")
-                        move("forward")
-                        move("turnRight")
-                    else
-                        move("turnLeft")
-                        dig("forward")
-                        move("forward")
-                        move("turnLeft")
-                    end
+            if (row < x) then
+                if (row % 2 == 0) then
+                   move("turnLeft")
+                   move("forward")
+                   move("turnLeft")
                 else
-                    if (i_x % 2 == 0) then
-                        move("turnRight")
-                        dig("forward")
-                        move("forward")
-                        move("turnRight")
-                    else
-                        move("turnLeft")
-                        dig("forward")
-                        move("forward")
-                        move("turnLeft")
-                    end
+                    move("turnRight")
+                    move("forward")
+                    move("turnRight")
                 end
             end
         end
@@ -203,6 +189,5 @@ end
 local function returnToStart()
 
 end
-
 handleArguments()
 excavate(settings.arg_x, settings.arg_y, settings.arg_z)
