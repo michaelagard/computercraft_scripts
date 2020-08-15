@@ -72,7 +72,7 @@ local function moveDirection(direction)
         
     end
 end
-
+-- x_iteration: 2 - right, 1 - left
 local function turnPlane(x_iteration)
     if not(x_iteration % 2 == 0) then
         if (Settings.cur_face == 3) then
@@ -127,7 +127,25 @@ local function calculateRequiredFuel()
 end
 
 local function returnToStart()
-    
+    if (Settings.cur_pos.x > 0) then
+        while Settings.cur_face >= 2 do
+            turnPlane(2)
+        end
+        while not(Settings.cur_face == 3) do
+            turnPlane(1)
+        end
+        for i = Settings.cur_pos.x, 0, -1 do
+            moveDirection("forward")
+        end
+    end
+    if (Settings.cur_pos.y > 0) then
+        while not(Settings.cur_face == 2) do
+            turnPlane(1)
+        end
+        for i = Settings.cur_pos.y, 0, -1 do
+            moveDirection("forward")
+        end
+    end
 end
 
 local function minePlane()
