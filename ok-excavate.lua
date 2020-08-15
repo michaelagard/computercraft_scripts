@@ -70,7 +70,7 @@ local function moveDirection(direction)
         Settings.cur_pos.z = Settings.cur_pos.z + 1
     end
     Settings["move_count"] = Settings["move_count"] + 1
-    -- turtle[direction]()
+    turtle[direction]()
     if debug then
         print(Settings.move_count .. " pos: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "] "  .. direction)
     end
@@ -84,7 +84,7 @@ local function turnPlane(x_iteration)
             Settings.cur_face = Settings.cur_face + 1
         end
         Settings["move_count"] = Settings["move_count"] + 1
-        -- turtle.turnRight()
+        turtle.turnRight()
         if (debug) then
             print(Settings.move_count .. " pos: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "] "  .. "turnRight")
         end
@@ -95,7 +95,7 @@ local function turnPlane(x_iteration)
             Settings.cur_face = Settings.cur_face - 1
         end
         Settings["move_count"] = Settings["move_count"] + 1
-        -- turtle.turnLeft()
+        turtle.turnLeft()
         if (debug) then
             print(Settings.move_count .. " pos: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "] "  .. "turnLeft")
         end
@@ -103,13 +103,13 @@ local function turnPlane(x_iteration)
 end
 
 local function dig()
-    -- if (turtle.detect()) then
-    --     turtle.dig()
-    --     Settings.dig_count = Settings.dig_count + 1
-    --     if debug then
-    --         print(formatted_time .. "ok-e: Digging")
-    --     end
-    -- end
+    if (turtle.detect()) then
+        turtle.dig()
+        Settings.dig_count = Settings.dig_count + 1
+        if debug then
+            print(formatted_time .. "ok-e: Digging")
+        end
+    end
 end
 
 
