@@ -5,7 +5,6 @@ local formatted_time = "[" .. textutils.formatTime(time, true) .. "] "
 local debug = true
 
 Settings = {
-    ["total_args"] = tableLength(args),
     --uses body relative directions
     ["arg_x"] = 1,      --right/left
     ["arg_y"] = 1,      --forward/backwards
@@ -31,54 +30,6 @@ local function tableLength(table)
     return 0
 end
 
-local function moveDirection(direction)
-    if (Settings.cur_face == 0) then
-        Settings.cur_pos.y = Settings.cur_pos.y + 1
-    elseif (Settings.cur_face == 1) then
-        Settings.cur_pos.x = Settings.cur_pos.x + 1
-    elseif Settings.cur_face == 2 then
-        Settings.cur_pos.y = Settings.cur_pos.y - 1
-    elseif (Settings.cur_face == 3) then
-        Settings.cur_pos.x = Settings.cur_pos.x - 1
-    end
-    Settings["move_count"] = Settings["move_count"] + 1
-    turtle[direction]()
-    if debug then
-        print(formatted_time .. "ok-e: Forward " .. Settings.cur_pos.x, Settings.cur_pos.y, Settings.cur_pos.z)
-    end
-end
-
-local function turn(x_iteration)
-    if (x_iteration % 2 == 0 or x_iteration == 0) then
-        if (Settings.cur_face > 3) then
-            Settings.cur_face = 0
-        else
-            Settings.cur_face = Settings.cur_face + 1
-        end
-        moveDirection("turnRight")
-    else
-        if (Settings.cur_face < 0) then
-            Settings.cur_face = 3
-        else
-            Settings.cur_face = Settings.cur_face - 1
-        end
-        moveDirection("turnLeft")
-    end
-    if (debug) then
-        print(formatted_time .. "ok-e: turning / face: " .. tostring(Settings.cur_face))
-    end
-end
-
-local function dig()
-    if (turtle.detect()) then
-        turtle.dig()
-        Settings.dig_count = Settings.dig_count + 1
-        if debug then
-            print(formatted_time .. "ok-e: Digging")
-        end
-    end
-end
-
 local function handleArguments()
     if tableLength(args) > 0 then
     for i = 1, tableLength(args), 1 do
@@ -97,12 +48,68 @@ local function handleArguments()
         end
     end 
     else
-        print("Help line.")
+        print("Usage: ok-excavate [y] [x] [z]\n[y] - fowards | [x] left | [z] down")
     end
 end
 
+local function moveDirection(direction)
+    -- accepts forward / backward / up / down
+    if (Settings.cur_face == 0) then
+        Settings.cur_pos.y = Settings.cur_pos.y + 1
+    elseif (Settings.cur_face == 1) then
+        Settings.cur_pos.x = Settings.cur_pos.x + 1
+    elseif Settings.cur_face == 2 then
+        Settings.cur_pos.y = Settings.cur_pos.y - 1
+    elseif (Settings.cur_face == 3) then
+        Settings.cur_pos.x = Settings.cur_pos.x - 1
+    end
+    Settings["move_count"] = Settings["move_count"] + 1
+    turtle[direction]()
+    if debug then
+        print(formatted_time .. "ok-excavate: Forward | Position: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "]")
+    end
+    if direction == "forward" then
+        
+    end
+end
+
+local function turnPlane(x_iteration)
+    if not(x_iteration % 2 == 0) then
+        if (Settings.cur_face == 3) then
+            Settings.cur_face = 0
+        else
+            Settings.cur_face = Settings.cur_face + 1
+        end
+        turtle.turnRight()
+        if (debug) then
+            print(formatted_time .. "ok-e: turn right / face: " .. tostring(Settings.cur_face))
+        end
+    else
+        if (Settings.cur_face == 0) then
+            Settings.cur_face = 3
+        else
+            Settings.cur_face = Settings.cur_face - 1
+        end
+        turtle.turnLeft()
+        if (debug) then
+            print(formatted_time .. "ok-e: turn left / face: " .. tostring(Settings.cur_face))
+        end
+    end
+end
+
+local function dig()
+    if (turtle.detect()) then
+        turtle.dig()
+        Settings.dig_count = Settings.dig_count + 1
+        if debug then
+            print(formatted_time .. "ok-e: Digging")
+        end
+    end
+end
+
+
 local function calculateRequiredFuel()
-    local fuel_level = turtle.getFuelLevel()
+    -- local fuel_level = turtle.getFuelLevel()
     local required_fuel = 0
     if tableLength(args) == 1 then
         required_fuel = (Settings.arg_y * 4) - fuel_level
@@ -110,8 +117,6 @@ local function calculateRequiredFuel()
         required_fuel = ((Settings.arg_y * Settings.arg_x) * 4) - fuel_level
     elseif tableLength(args) == 3 then
         required_fuel = ((Settings.arg_y * Settings.arg_x * Settings.arg_z) * 4) - fuel_level
-    else
-        print("Usage: ok-excavate [y] [x] [z]\n[y] - fowards | [x] left | [z] down")
     end
     print("calculateRequiredFuel(): ", required_fuel)
     if (required_fuel > 0) then
@@ -122,41 +127,24 @@ local function calculateRequiredFuel()
 end
 
 local function returnToStart()
-    if Settings.cur_pos.y > 0 then
-        while not(Settings.cur_face == 2) do
-            turn(2)
-        end
-        for i_y = Settings.cur_pos.y, 0, -1 do
-            moveDirection("forward")
-        end
-    end
-    if Settings.cur_pos.x > 0 then
-        while not(Settings.cur_face == 3) do
-            turn(2)
-        end
-        for i_x = Settings.cur_pos.x, 0, -1 do
-            moveDirection("forward")
-        end
-    end
+    
 end
 
 local function minePlane()
-
     for iX = 1, Settings.arg_x, 1 do
-
-        for iY = 1, Settings.arg_y - 1, 1 do
+        for iY = 1, Settings.arg_y, 1 do
             dig()
             moveDirection("forward")
         end
         if (not(iX == Settings.arg_x)) then
-            turn(iX)
+            turnPlane(iX)
             dig()
             moveDirection("forward")
-            turn(iX)
+            turnPlane(iX)
         end
     end
     returnToStart()
 end
 handleArguments()
-calculateRequiredFuel()
+-- calculateRequiredFuel()
 minePlane()
