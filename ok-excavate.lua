@@ -70,9 +70,9 @@ local function moveDirection(direction)
         Settings.cur_pos.z = Settings.cur_pos.z + 1
     end
     Settings["move_count"] = Settings["move_count"] + 1
-    turtle[direction]()
+    -- turtle[direction]()
     if debug then
-        print(formatted_time .. "ok-excavate: " .. direction .. " | Position: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "]")
+        print(Settings.move_count .. " pos: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "] "  .. direction)
     end
 end
 -- x_iteration: 2 - right, 1 - left
@@ -83,9 +83,10 @@ local function turnPlane(x_iteration)
         else
             Settings.cur_face = Settings.cur_face + 1
         end
-        turtle.turnRight()
+        Settings["move_count"] = Settings["move_count"] + 1
+        -- turtle.turnRight()
         if (debug) then
-            print(formatted_time .. "ok-e: turn right / face: " .. tostring(Settings.cur_face))
+            print(Settings.move_count .. " pos: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "] "  .. "turnRight")
         end
     else
         if (Settings.cur_face == 0) then
@@ -93,21 +94,22 @@ local function turnPlane(x_iteration)
         else
             Settings.cur_face = Settings.cur_face - 1
         end
-        turtle.turnLeft()
+        Settings["move_count"] = Settings["move_count"] + 1
+        -- turtle.turnLeft()
         if (debug) then
-            print(formatted_time .. "ok-e: turn left / face: " .. tostring(Settings.cur_face))
+            print(Settings.move_count .. " pos: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "] "  .. "turnLeft")
         end
     end
 end
 
 local function dig()
-    if (turtle.detect()) then
-        turtle.dig()
-        Settings.dig_count = Settings.dig_count + 1
-        if debug then
-            print(formatted_time .. "ok-e: Digging")
-        end
-    end
+    -- if (turtle.detect()) then
+    --     turtle.dig()
+    --     Settings.dig_count = Settings.dig_count + 1
+    --     if debug then
+    --         print(formatted_time .. "ok-e: Digging")
+    --     end
+    -- end
 end
 
 
@@ -186,6 +188,8 @@ local function excavate(x_dim, y_dim, z_dim)
         if (z_dim > 1) then
             dig()
             moveDirection("down")
+            turnPlane(1)
+            turnPlane(1)
         end
     end
     returnToStart()
