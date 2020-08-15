@@ -102,14 +102,22 @@ local function turnPlane(x_iteration)
     end
 end
 
-local function dig()
-    if (turtle.detect()) then
-        turtle.dig()
-        Settings.dig_count = Settings.dig_count + 1
-        if debug then
-            print(formatted_time .. "ok-e: Digging")
+local function dig(direction)
+    if (direction == "forward") then
+        if (turtle.detect()) then
+            turtle.dig()
+            Settings.dig_count = Settings.dig_count + 1
         end
     end
+    if (direction == "down") then
+        if (turtle.detectDown()) then
+            turtle.dig()
+            Settings.dig_count = Settings.dig_count + 1
+        end
+    end
+        if debug then
+            print("Digging" .. direction .. ".")
+        end
 end
 
 
@@ -152,7 +160,7 @@ local function returnToStart()
         turnPlane(1)
     end
     if (Settings.cur_pos.z < 0) then
-        while not(Settings.cur_pos.z == 0) do
+        while not(Settings.cur_pos.z == 1) do
             moveDirection("up")
         end 
     end
@@ -173,7 +181,7 @@ local function excavate(x_dim, y_dim, z_dim)
                     turnPlane(i_x)
                 end
             else
-                for i_y = y_dim, 1, -1 do
+                for i_y = y_dim, 1 + 1, -1 do
                     dig()
                     moveDirection("forward")
                 end
