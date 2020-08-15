@@ -8,11 +8,11 @@ local settings = {
     ["arg_z"] = 0,      --up/down
     ["current_pos"] = {
         ["x"] = 0,
-        ["y"] = 0,
+        ["y"] = -1,     -- starts infront of the quarry
         ["z"] = 0,
     },
     ["move_count"] = 0,
-    ["current_face"] = 0,   -- 0 = +y | 1 = +x | 2 = -y | 3 = -x
+    ["current_face"] = 0,   -- 0 = forward, 1 = right, 2 = backward, 3 = left
     ["dig_count"] = 0,
     ["debug_mode"] = true,
     ["sim_mode"] = turtle == nil
@@ -39,9 +39,9 @@ local function handleArguments()
     for i = 1, tableLength(args), 1 do
         if (type(tonumber(args[i])) == "number") then
             if (i == 1) then
-                settings.arg_y = tonumber(args[i])
-            elseif (i == 2) then
                 settings.arg_x = tonumber(args[i])
+            elseif (i == 2) then
+                settings.arg_y = tonumber(args[i])
             elseif (i == 3) then
                 settings.arg_z = tonumber(args[i])
             else
@@ -52,7 +52,7 @@ local function handleArguments()
         end
     end 
     else
-        print("Usage: ok-excavate [y] [x] [z]\n[y] - fowards | [x] left | [z] down")
+        print("Usage: ok-excavate [+x] [+y] [-z]\n       [x] right | [y] forward | [z] depth")
     end
 end
 
@@ -85,7 +85,7 @@ local function move(direction)
         if (settings.sim_mode == false) then
             turtle.back()
         end
-    elseif (direction == "turnRight") then
+    elseif (direction == "right") then
         if (settings.current_face == 3) then
             settings.current_face = 0
         else
@@ -94,7 +94,7 @@ local function move(direction)
         if (settings.sim_mode == false) then
             turtle.turnRight()
         end
-    elseif (direction == "turnLeft") then
+    elseif (direction == "left") then
         if (settings.current_face == 0) then
             settings.current_face = 3
         else
@@ -149,7 +149,7 @@ local function dig(direction)
             settings.dig_count = settings.dig_count + 1
         end
         if settings.debug_mode == true then
-            print(formatted_24_hour_time .. "Digging " .. direction .. ".")
+            -- print(formatted_24_hour_time .. "Digging " .. direction .. ".")
         end
     end
 end
@@ -157,30 +157,25 @@ end
 
 
 local function excavate(x, y, z)
-    for depth = 0, z, 1 do
-        if depth > 0 then
-            dig("down")
-            move("down")
-            move("turnRight")
-            move("turnRight")
-        end
-        for row = 1, x, 1 do
-            for column = 1, y, 1 do
-                if (column < y) then
-                    dig("forward")
-                    move("forward")
-                end
+    -- implement depth
+    for i_row = 1, x, 1 do
+        for i_column = 1, y - 1, 1 do
+            if (i_row == 1 and i_column == 1) then -- initial move from 0, -1, 0
+                dig("forward")
+                move("forward")
             end
-            if (row < x) then
-                if (row % 2 == 0) then
-                   move("turnLeft")
-                   move("forward")
-                   move("turnLeft")
-                else
-                    move("turnRight")
-                    move("forward")
-                    move("turnRight")
-                end
+            dig("forward")
+            move("forward")
+        end
+        if (i_row < x) then
+            if (i_row % 2 == 0) then
+                move("left")
+                move("forward")
+                move("left")
+            else
+                move("right")
+                move("forward")
+                move("right")
             end
         end
     end
