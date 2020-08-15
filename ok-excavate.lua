@@ -1,23 +1,28 @@
 local args = {...}
 
-local time = os.time()
-local formatted_time = "[" .. textutils.formatTime(time, true) .. "] "
-local debug = true
 
-Settings = {
-    --uses body relative directions
+local settings = {
+    --uses body relative directions 0 = +y | 1 = +x | 2 = -y | 3 = -x
     ["arg_x"] = 1,      --right/left
     ["arg_y"] = 1,      --forward/backwards
-    ["arg_z"] = 1,      --up/down
-    ["cur_pos"] = {
+    ["arg_z"] = 0,      --up/down
+    ["current_pos"] = {
         ["x"] = 0,
         ["y"] = 0,
         ["z"] = 0,
     },
     ["move_count"] = 0,
-    ["cur_face"] = 0,   -- 0 = +y | 1 = +x | 2 = -y | 3 = -x
+    ["current_face"] = 0,   -- 0 = +y | 1 = +x | 2 = -y | 3 = -x
     ["dig_count"] = 0,
+    ["debug_mode"] = true,
+    ["sim_mode"] = turtle == nil
+            
 }
+
+print(settings.sim_mode)
+local time = os.time()
+local formatted_24_hour_time = "[" .. textutils.formatTime(time, true) .. "] "
+
 
 local function tableLength(table)
     local table_count = 0
@@ -35,11 +40,11 @@ local function handleArguments()
     for i = 1, tableLength(args), 1 do
         if (type(tonumber(args[i])) == "number") then
             if (i == 1) then
-                Settings.arg_y = tonumber(args[i])
+                settings.arg_y = tonumber(args[i])
             elseif (i == 2) then
-                Settings.arg_x = tonumber(args[i])
+                settings.arg_x = tonumber(args[i])
             elseif (i == 3) then
-                Settings.arg_z = tonumber(args[i])
+                settings.arg_z = tonumber(args[i])
             else
                 error("too many arguments")
             end
@@ -52,161 +57,139 @@ local function handleArguments()
     end
 end
 
-local function moveDirection(direction)
-    -- accepts forward / backward / up / down
-    if not(direction == "down" or direction == "up") then
-        if (Settings.cur_face == 0) then
-            Settings.cur_pos.y = Settings.cur_pos.y + 1
-        elseif (Settings.cur_face == 1) then
-            Settings.cur_pos.x = Settings.cur_pos.x + 1
-        elseif Settings.cur_face == 2 then
-            Settings.cur_pos.y = Settings.cur_pos.y - 1
-        elseif (Settings.cur_face == 3) then
-            Settings.cur_pos.x = Settings.cur_pos.x - 1
+
+local function move(direction)
+    if (direction == "forward") then
+        if (settings.current_face == 0) then
+            settings.current_pos.y = settings.current_pos.y + 1
+        elseif (settings.current_face == 1) then
+            settings.current_pos.x = settings.current_pos.x + 1
+        elseif (settings.current_face == 2) then
+            settings.current_pos.y = settings.current_pos.y - 1
+        elseif (settings.current_face == 3) then
+            settings.current_pos.x = settings.current_pos.x - 1
+        end
+        if (settings.sim_mode == false) then
+            turtle.forward()
+        end
+    elseif (direction == "back") then
+        if (settings.current_face == 0) then
+            settings.current_pos.y = settings.current_pos.y - 1
+        elseif (settings.current_face == 1) then
+            settings.current_pos.x = settings.current_pos.x - 1
+        elseif (settings.current_face == 2) then
+            settings.current_pos.y = settings.current_pos.y + 1
+        elseif (settings.current_face == 3) then
+            settings.current_pos.x = settings.current_pos.x + 1
+        end
+
+        if (settings.sim_mode == false) then
+            turtle.back()
+        end
+    elseif (direction == "turnRight") then
+        if (settings.current_face == 3) then
+            settings.current_face = 0
+        else
+            settings.current_face = settings.current_face + 1
+        end
+        if (settings.sim_mode == false) then
+            turtle.turnRight()
+        end
+    elseif (direction == "turnLeft") then
+        if (settings.current_face == 0) then
+            settings.current_face = 3
+        else
+            settings.current_face = settings.current_face - 1
+        end
+        if (settings.sim_mode == false) then
+            turtle.turnLeft()
+        end
+    elseif (direction == "up") then
+        settings.current_pos.z = settings.current_pos.z + 1
+        if (settings.sim_mode == false) then
+            turtle.up()
         end
     elseif (direction == "down") then
-        Settings.cur_pos.z = Settings.cur_pos.z - 1
-    elseif (direction == "up") then
-        Settings.cur_pos.z = Settings.cur_pos.z + 1
-    end
-    Settings["move_count"] = Settings["move_count"] + 1
-    turtle[direction]()
-    if debug then
-        print(Settings.move_count .. " pos: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "] "  .. direction)
-    end
-end
--- x_iteration: 2 - right, 1 - left
-local function turnPlane(x_iteration)
-    if not(x_iteration % 2 == 0) then
-        if (Settings.cur_face == 3) then
-            Settings.cur_face = 0
-        else
-            Settings.cur_face = Settings.cur_face + 1
-        end
-        Settings["move_count"] = Settings["move_count"] + 1
-        turtle.turnRight()
-        if (debug) then
-            print(Settings.move_count .. " pos: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "] "  .. "turnRight")
+        settings.current_pos.z = settings.current_pos.z - 1
+        if (settings.sim_mode == false) then
+            turtle.down()
         end
     else
-        if (Settings.cur_face == 0) then
-            Settings.cur_face = 3
-        else
-            Settings.cur_face = Settings.cur_face - 1
-        end
-        Settings["move_count"] = Settings["move_count"] + 1
-        turtle.turnLeft()
-        if (debug) then
-            print(Settings.move_count .. " pos: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "] "  .. "turnLeft")
-        end
+        error("'" .. direction .. "' is not a valid direction.")
+    end
+
+    local formatted_current_pos = "[" .. settings.current_pos.x .. "," .. settings.current_pos.y .. "," .. settings.current_pos.z .. "] "
+    local formatted_current_face = "F" .. settings.current_face .. " "
+    
+    if (settings.debug_mode == true) then
+        print(formatted_24_hour_time .. formatted_current_pos .. formatted_current_face .. direction)
     end
 end
 
 local function dig(direction)
     if (direction == "forward") then
-        if (turtle.detect()) then
-            turtle.dig()
-            Settings.dig_count = Settings.dig_count + 1
+        if (settings.sim_mode == false) then
+            if (turtle.detect()) then
+                settings.dig_count = settings.dig_count + 1
+                turtle.dig()
+            end
+        else
+            settings.dig_count = settings.dig_count + 1
+        end
+        if settings.debug_mode == true then
+            -- print(formatted_24_hour_time .. "Digging " .. direction .. ".")
         end
     end
     if (direction == "down") then
-        if (turtle.detectDown()) then
-            turtle.dig()
-            Settings.dig_count = Settings.dig_count + 1
+        if (settings.sim_mode == false) then
+            if (turtle.detectDown()) then
+                settings.dig_count = settings.dig_count + 1
+                turtle.digDown()
+            end
+        else
+            settings.dig_count = settings.dig_count + 1
+        end
+        if settings.debug_mode == true then
+            print(formatted_24_hour_time .. "Digging " .. direction .. ".")
         end
     end
-        if debug then
-            print("Digging" .. direction .. ".")
-        end
 end
 
 
-local function calculateRequiredFuel()
-    -- local fuel_level = turtle.getFuelLevel()
-    local required_fuel = 0
-    if tableLength(args) == 1 then
-        required_fuel = (Settings.arg_y * 4) - fuel_level
-    elseif tableLength(args) == 2 then
-        required_fuel = ((Settings.arg_y * Settings.arg_x) * 4) - fuel_level
-    elseif tableLength(args) == 3 then
-        required_fuel = ((Settings.arg_y * Settings.arg_x * Settings.arg_z) * 4) - fuel_level
-    end
-    print("calculateRequiredFuel(): ", required_fuel)
-    if (required_fuel > 0) then
-        return required_fuel
-    else
-        return 0
+
+local function excavate(x, y, z)
+    for i_z = 1, z, 1 do
+        if i_z > 1 then
+            dig("down")
+            move("down")
+            move("turnRight")
+            move("turnRight")
+        end
+        for i_x = 1, x, 1 do
+            for i_y = 2, y, 1 do
+                dig("forward")
+                move("forward")
+            end
+            if (x > 1 and not(i_x == x)) then
+                if not(i_x % 2 == 0) and not(i_z % 2 == 0) then
+                    move("turnRight")
+                    dig("forward")
+                    move("forward")
+                    move("turnRight")
+                else
+                    move("turnLeft")
+                    dig("forward")
+                    move("forward")
+                    move("turnLeft")
+                end
+            end
+        end
     end
 end
 
 local function returnToStart()
-    if (Settings.cur_pos.x > 0) then
-        while not(Settings.cur_face == 3) do
-            turnPlane(1)
-        end
-        for i = Settings.cur_pos.x - 1, 0, -1 do
-            moveDirection("forward")
-        end
-    end
-    if (Settings.cur_pos.y > 0) then
-        while not(Settings.cur_face == 2) do
-            turnPlane(1)
-        end
-        for i = Settings.cur_pos.y - 1, 0, -1 do
-            moveDirection("forward")
-        end
-    end
-    while not(Settings.cur_face == 0) do
-        turnPlane(1)
-    end
-    if (Settings.cur_pos.z < 0) then
-        while not(Settings.cur_pos.z == 1) do
-            moveDirection("up")
-        end 
-    end
+
 end
 
-local function excavate(x_dim, y_dim, z_dim)
-    for i_z = 1, z_dim, 1 do
-        for i_x = 1, x_dim, 1 do
-            if (i_z % 2 == 0) then
-                for i_y = 1, y_dim - 1, 1 do
-                    dig("forward")
-                    moveDirection("forward")
-                end
-                if (not(i_x == x_dim)) then
-                    turnPlane(i_x)
-                    dig("forward")
-                    moveDirection("forward")
-                    turnPlane(i_x)
-                end
-            else
-                for i_y = y_dim, 1 + 1, -1 do
-                    dig("forward")
-                    moveDirection("forward")
-                end
-                if (not(i_x == x_dim)) then
-                    turnPlane(i_x)
-                    dig("forward")
-                    moveDirection("forward")
-                    turnPlane(i_x)
-                end
-            end
-        end
-        if (z_dim > 1) then
-            dig("down")
-            moveDirection("down")
-            if (i_z % 2 == 0) then
-                turnPlane(1)
-                turnPlane(1)
-            else
-                turnPlane(2)
-                turnPlane(2)
-            end
-        end
-    end
-    returnToStart()
-end
 handleArguments()
--- calculateRequiredFuel()
-excavate(Settings.arg_x, Settings.arg_y, Settings.arg_z)
+excavate(settings.arg_x, settings.arg_y, settings.arg_z)
