@@ -54,14 +54,20 @@ end
 
 local function moveDirection(direction)
     -- accepts forward / backward / up / down
-    if (Settings.cur_face == 0) then
-        Settings.cur_pos.y = Settings.cur_pos.y + 1
-    elseif (Settings.cur_face == 1) then
-        Settings.cur_pos.x = Settings.cur_pos.x + 1
-    elseif Settings.cur_face == 2 then
-        Settings.cur_pos.y = Settings.cur_pos.y - 1
-    elseif (Settings.cur_face == 3) then
-        Settings.cur_pos.x = Settings.cur_pos.x - 1
+    if not(direction == "down" or direction == "up") then
+        if (Settings.cur_face == 0) then
+            Settings.cur_pos.y = Settings.cur_pos.y + 1
+        elseif (Settings.cur_face == 1) then
+            Settings.cur_pos.x = Settings.cur_pos.x + 1
+        elseif Settings.cur_face == 2 then
+            Settings.cur_pos.y = Settings.cur_pos.y - 1
+        elseif (Settings.cur_face == 3) then
+            Settings.cur_pos.x = Settings.cur_pos.x - 1
+        end
+    elseif (direction == "down") then
+        Settings.cur_pos.z = Settings.cur_pos.z - 1
+    elseif (direction == "up") then
+        Settings.cur_pos.z = Settings.cur_pos.z + 1
     end
     Settings["move_count"] = Settings["move_count"] + 1
     turtle[direction]()
@@ -143,6 +149,11 @@ local function returnToStart()
     while not(Settings.cur_face == 0) do
         turnPlane(1)
     end
+    if (Settings.cur_pos.z < 0) then
+        while not(Settings.cur_pos.z == 0) do
+            moveDirection("up")
+        end 
+    end
 end
 
 local function excavate(x_dim, y_dim, z_dim)
@@ -172,7 +183,9 @@ local function excavate(x_dim, y_dim, z_dim)
                 end
             end
         end
-        moveDirection("down")
+        if (z_dim > 1) then
+            moveDirection("down")
+        end
     end
     returnToStart()
 end
