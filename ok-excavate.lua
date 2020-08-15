@@ -2,17 +2,6 @@ local args = {...}
 
 local time = os.time()
 local formatted_time = "[" .. textutils.formatTime(time, true) .. "] "
-
-local function tableLength(table)
-    local table_count = 0
-    if (type(table) == "table") then
-        for key, value in pairs(table) do
-            table_count = table_count + 1
-        end
-        return table_count
-    end
-    return 0
-end
 local debug = true
 
 Settings = {
@@ -31,6 +20,17 @@ Settings = {
     ["dig_count"] = 0,
 }
 
+local function tableLength(table)
+    local table_count = 0
+    if (type(table) == "table") then
+        for key, value in pairs(table) do
+            table_count = table_count + 1
+        end
+        return table_count
+    end
+    return 0
+end
+
 local function moveDirection(direction)
     if (Settings.cur_face == 0) then
         Settings.cur_pos.y = Settings.cur_pos.y + 1
@@ -47,6 +47,7 @@ local function moveDirection(direction)
         print(formatted_time .. "ok-e: Forward " .. Settings.cur_pos.x, Settings.cur_pos.y, Settings.cur_pos.z)
     end
 end
+
 local function turn(x_iteration)
     if (x_iteration % 2 == 0 or x_iteration == 0) then
         if (Settings.cur_face > 3) then
@@ -67,6 +68,7 @@ local function turn(x_iteration)
         print(formatted_time .. "ok-e: turning / face: " .. tostring(Settings.cur_face))
     end
 end
+
 local function dig()
     if (turtle.detect()) then
         turtle.dig()
@@ -76,6 +78,7 @@ local function dig()
         end
     end
 end
+
 local function handleArguments()
     if tableLength(args) > 0 then
     for i = 1, tableLength(args), 1 do
@@ -98,8 +101,6 @@ local function handleArguments()
     end
 end
 
-
-
 local function calculateRequiredFuel()
     local fuel_level = turtle.getFuelLevel()
     local required_fuel = 0
@@ -120,15 +121,30 @@ local function calculateRequiredFuel()
     end
 end
 
-local function returnToStart(current_x, current_y, current_z)
-
+local function returnToStart()
+    if Settings.cur_pos.y > 0 then
+        while not(Settings.cur_face == 2) do
+            turn(2)
+        end
+        for i_y = Settings.cur_pos.y, 0, -1 do
+            moveDirection("forward")
+        end
+    end
+    if Settings.cur_pos.x > 0 then
+        while not(Settings.cur_face == 3) do
+            turn(2)
+        end
+        for i_x = Settings.cur_pos.x, 0, -1 do
+            moveDirection("forward")
+        end
+    end
 end
 
 local function minePlane()
 
     for iX = 1, Settings.arg_x, 1 do
 
-        for iY = 1, Settings.arg_y, 1 do
+        for iY = 1, Settings.arg_y - 1, 1 do
             dig()
             moveDirection("forward")
         end
@@ -139,7 +155,7 @@ local function minePlane()
             turn(iX)
         end
     end
-    returnToStart(Settings.arg_x, Settings.arg_y, Settings.arg_z)
+    returnToStart()
 end
 handleArguments()
 calculateRequiredFuel()
