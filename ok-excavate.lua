@@ -5,7 +5,7 @@ local settings = {
     --uses body relative directions 0 = +y | 1 = +x | 2 = -y | 3 = -x
     ["arg_x"] = 1,      --right/left
     ["arg_y"] = 1,      --forward/backwards
-    ["arg_z"] = 0,      --up/down
+    ["arg_z"] = 1,      --up/down
     ["current_pos"] = {
         ["x"] = 0,
         ["y"] = 0,
@@ -19,7 +19,6 @@ local settings = {
             
 }
 
-print(settings.sim_mode)
 local time = os.time()
 local formatted_24_hour_time = "[" .. textutils.formatTime(time, true) .. "] "
 
@@ -170,17 +169,31 @@ local function excavate(x, y, z)
                 dig("forward")
                 move("forward")
             end
-            if (x > 1 and not(i_x == x)) then
-                if not(i_x % 2 == 0) and not(i_z % 2 == 0) then
-                    move("turnRight")
-                    dig("forward")
-                    move("forward")
-                    move("turnRight")
+            if (x > 1 and i_x < x) then
+                if (i_z % 2 == 0 or i_z == 1) then
+                    if not(i_x % 2 == 0) then
+                        move("turnRight")
+                        dig("forward")
+                        move("forward")
+                        move("turnRight")
+                    else
+                        move("turnLeft")
+                        dig("forward")
+                        move("forward")
+                        move("turnLeft")
+                    end
                 else
-                    move("turnLeft")
-                    dig("forward")
-                    move("forward")
-                    move("turnLeft")
+                    if (i_x % 2 == 0) then
+                        move("turnRight")
+                        dig("forward")
+                        move("forward")
+                        move("turnRight")
+                    else
+                        move("turnLeft")
+                        dig("forward")
+                        move("forward")
+                        move("turnLeft")
+                    end
                 end
             end
         end
