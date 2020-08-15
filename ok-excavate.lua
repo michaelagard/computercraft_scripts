@@ -171,33 +171,38 @@ local function excavate(x_dim, y_dim, z_dim)
         for i_x = 1, x_dim, 1 do
             if (i_z % 2 == 0) then
                 for i_y = 1, y_dim - 1, 1 do
-                    dig()
+                    dig("forward")
                     moveDirection("forward")
                 end
                 if (not(i_x == x_dim)) then
                     turnPlane(i_x)
-                    dig()
+                    dig("forward")
                     moveDirection("forward")
                     turnPlane(i_x)
                 end
             else
                 for i_y = y_dim, 1 + 1, -1 do
-                    dig()
+                    dig("forward")
                     moveDirection("forward")
                 end
                 if (not(i_x == x_dim)) then
                     turnPlane(i_x)
-                    dig()
+                    dig("forward")
                     moveDirection("forward")
                     turnPlane(i_x)
                 end
             end
         end
         if (z_dim > 1) then
-            dig()
+            dig("down")
             moveDirection("down")
-            turnPlane(1)
-            turnPlane(1)
+            if (i_z % 2 == 0) then
+                turnPlane(1)
+                turnPlane(1)
+            else
+                turnPlane(2)
+                turnPlane(2)
+            end
         end
     end
     returnToStart()
