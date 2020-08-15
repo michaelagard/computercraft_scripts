@@ -170,8 +170,8 @@ local function excavate(x, y, z)
                 move("forward")
             end
             if (x > 1 and i_x < x) then
-                if (i_z % 2 == 0 or i_z == 1) then
-                    if not(i_x % 2 == 0) then
+                if not(i_z % 2 == 0) then --check if z level is even or or equates to 1
+                    if not(i_x % 2 == 0) then --check if row is not divisible by 2
                         move("turnRight")
                         dig("forward")
                         move("forward")
