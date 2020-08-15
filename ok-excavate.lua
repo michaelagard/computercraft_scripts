@@ -66,10 +66,7 @@ local function moveDirection(direction)
     Settings["move_count"] = Settings["move_count"] + 1
     turtle[direction]()
     if debug then
-        print(formatted_time .. "ok-excavate: Forward | Position: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "]")
-    end
-    if direction == "forward" then
-        
+        print(formatted_time .. "ok-excavate: " .. direction .. " | Position: " .. "[" .. Settings.cur_pos.x .. "," .. Settings.cur_pos.y .. "," .. Settings.cur_pos.z .. "]")
     end
 end
 -- x_iteration: 2 - right, 1 - left
@@ -128,13 +125,10 @@ end
 
 local function returnToStart()
     if (Settings.cur_pos.x > 0) then
-        while Settings.cur_face >= 2 do
-            turnPlane(2)
-        end
         while not(Settings.cur_face == 3) do
             turnPlane(1)
         end
-        for i = Settings.cur_pos.x, 0, -1 do
+        for i = Settings.cur_pos.x - 1, 0, -1 do
             moveDirection("forward")
         end
     end
@@ -142,27 +136,46 @@ local function returnToStart()
         while not(Settings.cur_face == 2) do
             turnPlane(1)
         end
-        for i = Settings.cur_pos.y, 0, -1 do
+        for i = Settings.cur_pos.y - 1, 0, -1 do
             moveDirection("forward")
         end
     end
+    while not(Settings.cur_face == 0) do
+        turnPlane(1)
+    end
 end
 
-local function minePlane()
-    for iX = 1, Settings.arg_x, 1 do
-        for iY = 1, Settings.arg_y, 1 do
-            dig()
-            moveDirection("forward")
+local function excavate(x_dim, y_dim, z_dim)
+    for i_z = 1, z_dim, 1 do
+        for i_x = 1, x_dim, 1 do
+            if (i_z % 2 == 0) then
+                for i_y = 1, y_dim - 1, 1 do
+                    dig()
+                    moveDirection("forward")
+                end
+                if (not(i_x == x_dim)) then
+                    turnPlane(i_x)
+                    dig()
+                    moveDirection("forward")
+                    turnPlane(i_x)
+                end
+            else
+                for i_y = y_dim, 1, -1 do
+                    dig()
+                    moveDirection("forward")
+                end
+                if (not(i_x == x_dim)) then
+                    turnPlane(i_x)
+                    dig()
+                    moveDirection("forward")
+                    turnPlane(i_x)
+                end
+            end
         end
-        if (not(iX == Settings.arg_x)) then
-            turnPlane(iX)
-            dig()
-            moveDirection("forward")
-            turnPlane(iX)
-        end
+        moveDirection("down")
     end
     returnToStart()
 end
 handleArguments()
 -- calculateRequiredFuel()
-minePlane()
+excavate(Settings.arg_x, Settings.arg_y, Settings.arg_z)
