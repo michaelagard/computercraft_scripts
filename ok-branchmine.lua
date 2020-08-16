@@ -1,4 +1,8 @@
 local args = {...}
+
+local time = os.time()
+local formatted_24_hour_time = "[" .. textutils.formatTime(time, true) .. "] "
+
 local settings = {
     --uses body relative directions 0 = +y | 1 = +x | 2 = -y | 3 = -x
     ["length"] = 0,
