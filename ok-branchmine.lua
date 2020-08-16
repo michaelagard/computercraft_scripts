@@ -187,13 +187,13 @@ end
 local function mineSequence(length)
     for i = 1, settings.length, 1 do
         dig("f")
-        move("f")
-        dig("d")
         if (settings.current_pos.y % 4 == 0) then -- place torch every 4 blocks
             if not(settings.sim_mode) then
                 turtle.placeDown()
             end
         end
+        move("f")
+        dig("d")
     end
 end
 
