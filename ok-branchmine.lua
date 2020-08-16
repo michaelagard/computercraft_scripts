@@ -14,6 +14,17 @@ local settings = {
     ["sim_mode"] = turtle == nil
 }
 
+local function tableLength(table)
+    local table_count = 0
+    if (type(table) == "table") then
+        for key, value in pairs(table) do
+            table_count = table_count + 1
+        end
+        return table_count
+    end
+    return 0
+end
+
 local function handleArguments()
     if tableLength(args) > 0 then
     for i = 1, tableLength(args), 1 do
@@ -31,18 +42,6 @@ local function handleArguments()
         print("Usage: ok-branchmine [length]")
     end
 end
-
-local function tableLength(table)
-    local table_count = 0
-    if (type(table) == "table") then
-        for key, value in pairs(table) do
-            table_count = table_count + 1
-        end
-        return table_count
-    end
-    return 0
-end
-
 
 local function dig(direction)
     if (direction == "f") then
@@ -160,9 +159,11 @@ local function hasTorch()
         for i = 1, 16, 1 do
             turtle.select(i)
             local item = turtle.getItemDetail()
-            if item.name == "minecraft:torch" then
-                local item_count = turtle.getItemCount(i)
-                return true
+            if not(item.name == nil) then
+                if item.name == "minecraft:torch" then
+                    local item_count = turtle.getItemCount(i)
+                    return true
+                end
             end
         end
         return false
