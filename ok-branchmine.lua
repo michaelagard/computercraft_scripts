@@ -162,10 +162,12 @@ local function hasTorch()
     if not(settings.sim_mode) then
         for i = 1, 16, 1 do
             turtle.select(i)
-            local item = turtle.getItemDetail()
-            if not(item.name == nil) then
+            
+            if not(turtle.getItemDetail() == nil) then
+                local item = turtle.getItemDetail()
                 if item.name == "minecraft:torch" then
                     local item_count = turtle.getItemCount(i)
+                    print("Found " .. item_count .. " torches at slot " .. i ".")
                     return true
                 end
             end
@@ -184,14 +186,21 @@ local function initialCheck()
     end
 end
 
+local function placeTorch()
+    if (settings.current_pos.y % 4 == 0) then -- place torch every 4 blocks
+        if (settings.debug_mode == true) then
+            print(formatted_24_hour_time .. "placeing torch at " .. settings.current_pos.y)
+        end
+        if not(settings.sim_mode) then
+            turtle.placeDown()
+        end
+    end
+end
+
 local function mineSequence(length)
     for i = 1, settings.length, 1 do
+        placeTorch()
         dig("f")
-        if (settings.current_pos.y % 4 == 0) then -- place torch every 4 blocks
-            if not(settings.sim_mode) then
-                turtle.placeDown()
-            end
-        end
         move("f")
         dig("d")
     end
