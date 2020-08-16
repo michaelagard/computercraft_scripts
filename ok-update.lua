@@ -1,7 +1,7 @@
 local settings = {
     ["base_repository_url"] = "https://raw.githubusercontent.com/michaelagard/computercraft_scripts",
     ["default_branch"] = {"master"},
-    ["default_scripts"] = {"ok-update", "ok-dig", "ok-excavate", "ok_branchmine"},
+    ["default_scripts"] = {"ok-update", "ok-dig", "ok-excavate", "ok-branchmine"},
     ["branch"] = {},
     ["scripts"] = {},
     ["flags"] = {
