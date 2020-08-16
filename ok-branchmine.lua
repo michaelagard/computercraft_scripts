@@ -8,7 +8,7 @@ local settings = {
     ["length"] = 0,
     ["current_pos"] = {
         ["x"] = 0,
-        ["y"] = -1,     -- starts infront of the quarry
+        ["y"] = 0,
         ["z"] = 0,
     },
     ["move_count"] = 0,
@@ -186,10 +186,10 @@ local function initialCheck()
     end
 end
 
-local function placeTorch()
-    if (settings.current_pos.y % 4 == 0) then -- place torch every 4 blocks
+local function placeTorch(y_position)
+    if (y_position % 4 == 0 or y_position == 0) then -- place torch every 4 blocks
         if (settings.debug_mode == true) then
-            print(formatted_24_hour_time .. "placeing torch at " .. settings.current_pos.y)
+            print(formatted_24_hour_time .. "Placing torch at y_position " .. y_position .. ".")
         end
         if not(settings.sim_mode) then
             turtle.placeDown()
@@ -199,7 +199,7 @@ end
 
 local function mineSequence(length)
     for i = 1, settings.length, 1 do
-        placeTorch()
+        placeTorch(settings.current_pos.y)
         dig("f")
         move("f")
         dig("d")
