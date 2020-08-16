@@ -1,7 +1,7 @@
 local settings = {
     ["base_repository_url"] = "https://raw.githubusercontent.com/michaelagard/computercraft_scripts",
     ["default_branch"] = {"master"},
-    ["default_scripts"] = {"ok-update", "ok-dig", "ok-excavate"},
+    ["default_scripts"] = {"ok-update", "ok-dig", "ok-excavate", "ok_branchmine"},
     ["branch"] = {},
     ["scripts"] = {},
     ["flags"] = {
@@ -178,7 +178,7 @@ local function confirmContinue()
     io.write(settings.branch[1] or "")
 
     term.setTextColor(colors.white)
-    io.write("\nContinue with this configuration? (y/N) : ")
+    io.write("\nConfirm settings? (y/N) : ")
     local answer=io.read()
     if answer:match("[yY]") then
         return true
