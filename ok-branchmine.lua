@@ -11,12 +11,17 @@ local settings = {
         ["y"] = 0,
         ["z"] = 0,
     },
-    ["minecraft:torch"] = 0,
     ["torch_iteration"] = 4,
+    ["current_torch"] = 0,
+    ["current_fuel"] = 0,
     ["current_face"] = 0,   -- 0 = forward, 1 = right, 2 = backward, 3 = left
     ["dig_count"] = 0,
     ["debug_mode"] = true,
     ["sim_mode"] = turtle == nil
+}
+local item = {
+    ["torch"] = {["id"] = "minecraft:torch", ["setting"] = "current_torch"},
+    ["fuel"] = {["id"] = "minecraft:coal", ["setting"] = "current_fuel"}
 }
 
 local function tableLength(table)
@@ -158,40 +163,35 @@ local function move(direction)
     end
 end
 
-local function checkForItem(item_to_check)
+local function countItem(item_to_count)
     if not(settings.sim_mode) then
+        settings[item[item_to_count].setting] = 0
         for i = 1, 16, 1 do
             turtle.select(i)
             
             if not(turtle.getItemDetail() == nil) then
+                local item_to_check = turtle.getItemDetail()
 
-                local item = turtle.getItemDetail()
-
-                if item.name == item_to_check then
+                if item_to_check.name == item_to_count then
                     local item_count = turtle.getItemCount(i)
-                    print("Found " .. item_count .. " " .. item.name .. ".")
-                    settings["minecraft:torch"] = item_count
-                    return true
+                    settings[item[item_to_count].setting] = settings[item[item_to_count].setting] + item_count
                 end
             end
         end
-        io.write("Feed the turtle " .. item_to_check .. " and press enter.")
-        local wait_for_enter = io.read()
-        checkForItem(item_to_check)
     end
 end
 
-local function hasEnoughFuel(move_count)
-    local fuel_count = turtle.getFuelLevel()
-    if (move_count > fuel_count) then
+local function hasEnoughFuel()
+    settings.current_fuel = turtle.getFuelLevel()
+    if (settings.length > settings.current_fuel) then
         return false
     else
         return true
     end
 end
 
-local function hasEnoughTorches(move_count, iteration)
-    if (move_count / iteration  > settings["minecraft:torch"]) then
+local function hasEnoughTorches(iteration)
+    if (settings.length / iteration  > settings.current_torch) then
         return false
     else
         return true
@@ -199,18 +199,14 @@ local function hasEnoughTorches(move_count, iteration)
 end
 
 local function initialCheck()
-    if (hasEnoughFuel(settings.length)) then
-        if (hasEnoughTorches(settings.length, 4)) then
+    countItem(item.torch.id)
+    countItem(item.coal.id)
+    if (hasEnoughFuel()) then
+        if (hasEnoughTorches(4)) then
             if turtle.detectDown() then -- align turtle with top of tunnel
                 turtle.up()
             end
-        else
-            checkForItem("minecraft:torch")
-            initialCheck()
         end
-    else
-        checkForItem("minecraft:coal")
-        initialCheck()
     end
 end
 
@@ -221,7 +217,7 @@ local function placeTorch(y_position, iteration)
         end
         if not(settings.sim_mode) then
             turtle.placeDown()
-            settings["minecraft:torch"] = settings["minecraft:torch"] - 1
+            countItem(item.torch.id)
         end
     end
 end
