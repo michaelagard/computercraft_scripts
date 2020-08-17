@@ -20,8 +20,8 @@ local settings = {
     ["sim_mode"] = turtle == nil
 }
 local item = {
-    ["torch"] = {["id"] = "minecraft:torch", ["setting"] = "current_torch"},
-    ["fuel"] = {["id"] = "minecraft:coal", ["setting"] = "current_fuel"}
+    ["torch"] = {["id"] = "minecraft:torch", ["name"] = "torch", ["setting"] = "current_torch"},
+    ["fuel"] = {["id"] = "minecraft:coal", ["name"] = "coal", ["setting"] = "current_fuel"}
 }
 
 local function tableLength(table)
@@ -165,16 +165,16 @@ end
 
 local function countItem(item_to_count)
     if not(settings.sim_mode) then
-        settings[item[item_to_count].setting] = 0
+        settings[item_to_count.setting] = 0
         for i = 1, 16, 1 do
             turtle.select(i)
             
             if not(turtle.getItemDetail() == nil) then
                 local item_to_check = turtle.getItemDetail()
 
-                if item_to_check.name == item_to_count then
+                if item_to_check.name == item_to_count.id then
                     local item_count = turtle.getItemCount(i)
-                    settings[item[item_to_count].setting] = settings[item[item_to_count].setting] + item_count
+                    settings[item_to_count.setting] = settings[item_to_count.setting] + item_count
                 end
             end
         end
@@ -198,15 +198,26 @@ local function hasEnoughTorches(iteration)
     end
 end
 
+local function promptForItem(item_to_prompt)
+    print("Feed the turtle " .. item_to_prompt.name .. " and press enter.")
+    local prompt = io.read()
+end
+
 local function initialCheck()
-    countItem(item.torch.id)
-    countItem(item.coal.id)
+    countItem(item.torch)
+    countItem(item.coal)
     if (hasEnoughFuel()) then
         if (hasEnoughTorches(4)) then
             if turtle.detectDown() then -- align turtle with top of tunnel
                 turtle.up()
             end
+        else
+            promptForItem(item.torch)
+            initialCheck()
         end
+    else
+        promptForItem(item.coal)
+        initialCheck()
     end
 end
 
