@@ -204,6 +204,7 @@ local function hasEnoughFuel()
 end
 
 local function hasEnoughTorches(iteration)
+    print(settings.length / iteration)
     if (settings.length / iteration > settings.current_torch) then
         return false
     else
@@ -220,12 +221,12 @@ local function initialCheck()
     countItem(item.torch)
     countItem(item.fuel)
     if (hasEnoughFuel()) then
-        if (hasEnoughTorches(4)) then
+        if (hasEnoughTorches(3)) then
             if turtle.detectDown() then -- align turtle with top of tunnel
                 turtle.up()
             end
         else
-            promptForItem(item.torch, settings.length / 4 - settings.current_torch)
+            promptForItem(item.torch, settings.length / 3 - settings.current_torch)
             initialCheck()
         end
     else
