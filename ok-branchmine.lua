@@ -196,12 +196,14 @@ local function countItem(item_to_count)
     end
 end
 
-local function hasEnoughFuel()
-    settings.current_fuel_count = turtle.getFuelLevel()
-    if (settings.length > settings.current_fuel_count) then
-        return false
-    else
-        return true
+local function hasEnoughFuel(length, torch_iteration)
+    if not(settings.sim_mode) then
+        settings.current_fuel_count = turtle.getFuelLevel()
+        if (length + ((length / torch_iteration) * 4) > settings.current_fuel_count) then
+            return false
+        else
+            return true
+        end
     end
 end
 
@@ -222,12 +224,8 @@ end
 local function initialCheck()
     countItem(item.torch)
     countItem(item.fuel)
-    if (hasEnoughFuel()) then
+    if (hasEnoughFuel(settings.length, 3)) then
         if (hasEnoughTorches(3)) then
-            if turtle.detectDown() then -- align turtle with top of tunnel
-                turtle.up()
-            end
-        else
             promptForItem(item.torch, settings.length / 3 - settings.current_torch_count)
             initialCheck()
         end
@@ -237,20 +235,23 @@ local function initialCheck()
     end
 end
 
-local function placeTorch(y_position, iteration)
-    if (y_position % iteration == 0) then -- place torch every x blocks
-        if (settings.debug_mode == true) then
-            print(formatted_24_hour_time .. "Placing torch at y_position " .. y_position .. ".")
-        end
-        if not(settings.sim_mode) then
-            turtle.placeDown()
-            settings.current_torch_count = settings.current_torch_count - 1
-        end
+local function placeTorch()
+    if (settings.debug_mode == true) then
+        print(formatted_24_hour_time .. "Placing torch at y_position " .. y_position .. ".")
+    end
+    if not(settings.sim_mode) then
+        selectItem(item.torch)
+        turtle.move("r")
+        turtle.move("r")
+        turtle.place()
+        turtle.move("r")
+        turtle.move("r")
+        settings.current_torch_count = settings.current_torch_count - 1
     end
 end
 
 local function detectLiquid()
-    if turtle.detect() then
+    if (turtle.detect() or turtle.detectDown() or turtle.detectUp()) then
         local success, data = turtle.inspect()
         if (data.name == "minecraft:lava" or data.name == "minecraft:water") then
             return true
@@ -260,21 +261,45 @@ local function detectLiquid()
     end
 end
 
+local function detectAir()
+    if not(turtle.detectDown()) then
+        return true
+    else
+        return false
+    end
+end
+
+local function returnSequence(amount_to_return)
+    if settings.current_pos.z == 0 then
+        dig("u") -- just incase
+        move("u")
+    end
+    for i = 1, amount_to_return, 1 do
+        move("b")
+    end
+end
+
 local function mineSequence(length)
     if (length > 0) then
         for i = 1, settings.length, 1 do
-            selectItem(item.torch)
-            placeTorch(settings.current_pos.y, 4)
+            if (settings.current_pos.y + 1 % 4 == 0) then
+                placeTorch(settings.current_pos.y, 4)
+            end
             dig("f")
             move("f")
             if detectLiquid() then
                 selectItem(item.utility_block)
                 turtle.place()
-                break
+                returnSequence(length)
             end
-            dig("d")
+            if (detectAir()) then
+                selectItem(item.utility_block)
+                turtle.placeDown()
+            end
+            dig("u")
         end
     end
+    returnSequence(length)
 end
 
 handleArguments()
