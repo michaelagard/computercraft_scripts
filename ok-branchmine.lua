@@ -11,7 +11,8 @@ local settings = {
         ["y"] = 0,
         ["z"] = 0,
     },
-    ["move_count"] = 0,
+    ["minecraft:torch"] = 0,
+    ["torch_iteration"] = 4,
     ["current_face"] = 0,   -- 0 = forward, 1 = right, 2 = backward, 3 = left
     ["dig_count"] = 0,
     ["debug_mode"] = true,
@@ -157,52 +158,80 @@ local function move(direction)
     end
 end
 
-
-local function hasTorch()
+local function checkForItem(item)
     if not(settings.sim_mode) then
         for i = 1, 16, 1 do
             turtle.select(i)
             
             if not(turtle.getItemDetail() == nil) then
+
                 local item = turtle.getItemDetail()
-                if item.name == "minecraft:torch" then
+
+                if item.name == item then
                     local item_count = turtle.getItemCount(i)
-                    print("Found " .. item_count .. " torches at slot " .. i ".")
+                    print("Found " .. item_count .. " " .. item.name .. ".")
+                    settings["minecraft:torch"] = item_count
                     return true
                 end
             end
         end
+        io.write("Feed the turtle " .. item .. " and press enter.")
+        local wait_for_enter = io.read()
+        checkForItem(item)
+    end
+end
+
+local function hasEnoughFuel(move_count)
+    local fuel_count = turtle.getFuelLevel()
+    if (move_count > fuel_count) then
         return false
+    else
+        return true
+    end
+end
+
+local function hasEnoughTorches(move_count, iteration)
+    if (move_count / iteration  > settings["minecraft:torch"]) then
+        return false
+    else
+        return true
     end
 end
 
 local function initialCheck()
-    if (hasTorch()) then
-        if turtle.detectDown() then -- align turtle with top of tunnel
-            turtle.up()
+    if (hasEnoughFuel(settings.length) and hasEnoughTorches(settings.length, 4)) then
+        if (checkForItem("minecraft:torch")) then
+            if turtle.detectDown() then -- align turtle with top of tunnel
+                turtle.up()
+            end
+        else
+            error("No torches found.")
         end
     else
-        error("No torches found.")
+        checkForItem("minecraft:coal")
     end
 end
 
-local function placeTorch(y_position)
-    if (y_position % 4 == 0 or y_position == 0) then -- place torch every 4 blocks
+local function placeTorch(y_position, iteration)
+    if (y_position % iteration == 0) then -- place torch every x blocks
         if (settings.debug_mode == true) then
             print(formatted_24_hour_time .. "Placing torch at y_position " .. y_position .. ".")
         end
         if not(settings.sim_mode) then
             turtle.placeDown()
+            settings["minecraft:torch"] = settings["minecraft:torch"] - 1
         end
     end
 end
 
 local function mineSequence(length)
-    for i = 1, settings.length, 1 do
-        placeTorch(settings.current_pos.y)
-        dig("f")
-        move("f")
-        dig("d")
+    if (length > 0) then
+        for i = 1, settings.length, 1 do
+            placeTorch(settings.current_pos.y, 4)
+            dig("f")
+            move("f")
+            dig("d")
+        end
     end
 end
 
