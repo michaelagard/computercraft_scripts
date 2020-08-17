@@ -158,7 +158,7 @@ local function move(direction)
     end
 end
 
-local function checkForItem(item)
+local function checkForItem(item_to_check)
     if not(settings.sim_mode) then
         for i = 1, 16, 1 do
             turtle.select(i)
@@ -167,7 +167,7 @@ local function checkForItem(item)
 
                 local item = turtle.getItemDetail()
 
-                if item.name == item then
+                if item.name == item_to_check then
                     local item_count = turtle.getItemCount(i)
                     print("Found " .. item_count .. " " .. item.name .. ".")
                     settings["minecraft:torch"] = item_count
@@ -177,7 +177,7 @@ local function checkForItem(item)
         end
         io.write("Feed the turtle " .. item .. " and press enter.")
         local wait_for_enter = io.read()
-        checkForItem(item)
+        checkForItem(item_to_check)
     end
 end
 
