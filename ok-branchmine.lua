@@ -12,16 +12,18 @@ local settings = {
         ["z"] = 0,
     },
     ["torch_iteration"] = 4,
-    ["current_torch"] = 0,
-    ["current_fuel"] = 0,
+    ["current_torch_count"] = 0,
+    ["current_fuel_count"] = 0,
+    ["current_utility_block_count"] = 0,
     ["current_face"] = 0,   -- 0 = forward, 1 = right, 2 = backward, 3 = left
     ["dig_count"] = 0,
     ["debug_mode"] = true,
     ["sim_mode"] = turtle == nil
 }
 local item = {
-    ["torch"] = {["id"] = "minecraft:torch", ["name"] = "torch", ["setting"] = "current_torch"},
-    ["fuel"] = {["id"] = "minecraft:coal", ["name"] = "coal", ["setting"] = "current_fuel"}
+    ["torch"] = {["id"] = "minecraft:torch", ["name"] = "torch", ["setting"] = "current_torch_count"},
+    ["fuel"] = {["id"] = "minecraft:coal", ["name"] = "coal", ["setting"] = "current_fuel_count"},
+    ["utility_block"] = {["id"] = "minecraft:cobblestone", ["name"] = "cobble", ["setting"] = "current_utility_block_count"},
 }
 
 local function tableLength(table)
@@ -195,8 +197,8 @@ local function countItem(item_to_count)
 end
 
 local function hasEnoughFuel()
-    settings.current_fuel = turtle.getFuelLevel()
-    if (settings.length > settings.current_fuel) then
+    settings.current_fuel_count = turtle.getFuelLevel()
+    if (settings.length > settings.current_fuel_count) then
         return false
     else
         return true
@@ -205,7 +207,7 @@ end
 
 local function hasEnoughTorches(iteration)
     print(settings.length / iteration)
-    if (settings.length / iteration > settings.current_torch) then
+    if (settings.length / iteration > settings.current_torch_count) then
         return false
     else
         return true
@@ -226,7 +228,7 @@ local function initialCheck()
                 turtle.up()
             end
         else
-            promptForItem(item.torch, settings.length / 3 - settings.current_torch)
+            promptForItem(item.torch, settings.length / 3 - settings.current_torch_count)
             initialCheck()
         end
     else
@@ -242,7 +244,18 @@ local function placeTorch(y_position, iteration)
         end
         if not(settings.sim_mode) then
             turtle.placeDown()
-            countItem(item.torch)
+            settings.current_torch_count = settings.current_torch_count - 1
+        end
+    end
+end
+
+local function detectLiquid()
+    if turtle.detect() then
+        local success, data = turtle.inspect()
+        if (data.name == "minecraft:lava" or data.name == "minecraft:water") then
+            return true
+        else
+            return false
         end
     end
 end
@@ -254,6 +267,11 @@ local function mineSequence(length)
             placeTorch(settings.current_pos.y, 4)
             dig("f")
             move("f")
+            if detectLiquid() then
+                selectItem(item.utility_block)
+                turtle.place()
+                break
+            end
             dig("d")
         end
     end
