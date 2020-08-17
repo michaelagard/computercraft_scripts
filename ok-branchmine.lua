@@ -163,6 +163,19 @@ local function move(direction)
     end
 end
 
+local function selectItem(item_to_select)
+    for i = 1, 16, 1 do
+        turtle.select(i)
+        if not(turtle.getItemDetail() == nil) then
+            local item_to_check = turtle.getItemDetail()
+
+            if item_to_check.name == item_to_select.id then
+                break
+            end
+        end
+    end
+end
+
 local function countItem(item_to_count)
     if not(settings.sim_mode) then
         settings[item_to_count.setting] = 0
@@ -196,10 +209,6 @@ local function hasEnoughTorches(iteration)
     else
         return true
     end
-end
-
-local function requiredTorches()
-    
 end
 
 local function promptForItem(item_to_prompt, amount)
@@ -240,6 +249,7 @@ end
 local function mineSequence(length)
     if (length > 0) then
         for i = 1, settings.length, 1 do
+            selectItem(item.torch)
             placeTorch(settings.current_pos.y, 4)
             dig("f")
             move("f")
