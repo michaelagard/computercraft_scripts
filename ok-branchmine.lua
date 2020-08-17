@@ -191,15 +191,19 @@ local function hasEnoughFuel()
 end
 
 local function hasEnoughTorches(iteration)
-    if (settings.length / iteration  > settings.current_torch) then
+    if (settings.length / iteration > settings.current_torch) then
         return false
     else
         return true
     end
 end
 
-local function promptForItem(item_to_prompt)
-    print("Feed the turtle " .. item_to_prompt.name .. " and press enter.")
+local function requiredTorches()
+    
+end
+
+local function promptForItem(item_to_prompt, amount)
+    print("Feed the turtle " .. amount .. " " .. item_to_prompt.name .. "(s) and press enter.")
     local prompt = io.read()
 end
 
@@ -212,7 +216,7 @@ local function initialCheck()
                 turtle.up()
             end
         else
-            promptForItem(item.torch)
+            promptForItem(item.torch, settings.length / 4 - settings.current_torch)
             initialCheck()
         end
     else
