@@ -5,25 +5,32 @@ local formatted_24_hour_time = "[" .. textutils.formatTime(time, true) .. "] "
 
 local settings = {
     --uses body relative directions 0 = +y | 1 = +x | 2 = -y | 3 = -x
-    ["length"] = 0,
-    ["current_pos"] = {
-        ["x"] = 0,
-        ["y"] = 0,
-        ["z"] = 0,
-    },
-    ["torch_iteration"] = 4,
-    ["current_torch_count"] = 0,
-    ["current_fuel_count"] = 0,
-    ["current_utility_block_count"] = 0,
     ["current_face"] = 0,   -- 0 = forward, 1 = right, 2 = backward, 3 = left
+    ["current_pos"] = {     -- pos updates handled through move function
+        ["x"] = 0,          -- + right      | - left
+        ["y"] = 0,          -- + forward    | - backward
+        ["z"] = 0,          -- + up         | - down
+    },
+    ["length"] = 0,         -- distance turtle will tunnel
+    ["item"] = {            -- inventory management reference
+        ["torch"] = {
+            ["id"] = "minecraft:torch",
+            ["count"] = 0,
+            ["index"] = 0},
+        ["coal"] = {
+            ["id"] = "minecraft:coal",
+            ["count"] = 0,
+            ["index"] = 0},
+        ["utility_block"] = {
+            ["id"] = "minecraft:cobblestone",
+            ["count"] = 0,
+            ["index"] = 0}},
+    ["current_fuel_count"] = turtle.getFuelLevel(),
+    ["torch_iteration"] = 4,
     ["dig_count"] = 0,
     ["debug_mode"] = true,
-    ["sim_mode"] = turtle == nil
 }
 local item = {
-    ["torch"] = {["id"] = "minecraft:torch", ["name"] = "torch", ["setting"] = "current_torch_count"},
-    ["fuel"] = {["id"] = "minecraft:coal", ["name"] = "coal", ["setting"] = "current_fuel_count"},
-    ["utility_block"] = {["id"] = "minecraft:cobblestone", ["name"] = "cobble", ["setting"] = "current_utility_block_count"},
 }
 
 local function tableLength(table)
@@ -57,43 +64,25 @@ end
 
 local function dig(direction)
     if (direction == "f") then
-        if (settings.sim_mode == false) then
-            if (turtle.detect()) then
-                settings.dig_count = settings.dig_count + 1
-                turtle.dig()
-            end
-        else
+        if (turtle.detect()) then
             settings.dig_count = settings.dig_count + 1
+            turtle.dig()
         end
-        if settings.debug_mode == true then
-            -- print(formatted_24_hour_time .. "Digging " .. direction .. ".")
-        end
+        settings.dig_count = settings.dig_count + 1
     end
     if (direction == "d") then
-        if (settings.sim_mode == false) then
-            if (turtle.detectDown()) then
-                settings.dig_count = settings.dig_count + 1
-                turtle.digDown()
-            end
-        else
+        if (turtle.detectDown()) then
             settings.dig_count = settings.dig_count + 1
+            turtle.digDown()
         end
-        if settings.debug_mode == true then
-            -- print(formatted_24_hour_time .. "Digging " .. direction .. ".")
-        end
+        settings.dig_count = settings.dig_count + 1
     end
     if (direction == "u") then
-        if (settings.sim_mode == false) then
-            if (turtle.detectUp()) then
-                settings.dig_count = settings.dig_count + 1
-                turtle.digUp()
-            end
-        else
+        if (turtle.detectUp()) then
             settings.dig_count = settings.dig_count + 1
+            turtle.digUp()
         end
-        if settings.debug_mode == true then
-            -- print(formatted_24_hour_time .. "Digging " .. direction .. ".")
-        end
+        settings.dig_count = settings.dig_count + 1
     end
 end
 
@@ -108,9 +97,7 @@ local function move(direction)
         elseif (settings.current_face == 3) then
             settings.current_pos.x = settings.current_pos.x - 1
         end
-        if (settings.sim_mode == false) then
-            turtle.forward()
-        end
+        turtle.forward()
     elseif (direction == "b") then
         if (settings.current_face == 0) then
             settings.current_pos.y = settings.current_pos.y - 1
@@ -121,99 +108,57 @@ local function move(direction)
         elseif (settings.current_face == 3) then
             settings.current_pos.x = settings.current_pos.x + 1
         end
-
-        if (settings.sim_mode == false) then
-            turtle.back()
-        end
+        turtle.back()
     elseif (direction == "r") then
         if (settings.current_face == 3) then
             settings.current_face = 0
         else
             settings.current_face = settings.current_face + 1
         end
-        if (settings.sim_mode == false) then
-            turtle.turnRight()
-        end
+        turtle.turnRight()
     elseif (direction == "l") then
         if (settings.current_face == 0) then
             settings.current_face = 3
         else
             settings.current_face = settings.current_face - 1
         end
-        if (settings.sim_mode == false) then
-            turtle.turnLeft()
-        end
+        turtle.turnLeft()
     elseif (direction == "u") then
         settings.current_pos.z = settings.current_pos.z + 1
-        if (settings.sim_mode == false) then
-            turtle.up()
-        end
+        turtle.up()
     elseif (direction == "d") then
         settings.current_pos.z = settings.current_pos.z - 1
-        if (settings.sim_mode == false) then
-            turtle.down()
-        end
+        turtle.down()
     else
         error("'" .. direction .. "' is not a valid direction.")
     end
-
-    local formatted_current_pos = "[" .. settings.current_pos.x .. "," .. settings.current_pos.y .. "," .. settings.current_pos.z .. "] "
-    local formatted_current_face = "F" .. settings.current_face .. " "
-    
-    if (settings.debug_mode == true) then
-        print(formatted_24_hour_time .. formatted_current_pos .. formatted_current_face .. direction)
-    end
 end
 
-local function selectItem(item_to_select)
-    for i = 1, 16, 1 do
-        turtle.select(i)
-        if not(turtle.getItemDetail() == nil) then
-            local item_to_check = turtle.getItemDetail()
-
-            if item_to_check.name == item_to_select.id then
-                break
-            end
-        end
-    end
+local function selectItem(item_index)
+    turtle.select(item_index)
 end
 
 local function countItem(item_to_count)
-    if not(settings.sim_mode) then
-        settings[item_to_count.setting] = 0
-        for i = 1, 16, 1 do
-            turtle.select(i)
-            
-            if not(turtle.getItemDetail() == nil) then
-                local item_to_check = turtle.getItemDetail()
-
-                if item_to_check.name == item_to_count.id then
-                    local item_count = turtle.getItemCount(i)
-                    settings[item_to_count.setting] = settings[item_to_count.setting] + item_count
-                end
-            end
+    settings.item[item_to_count].count = 0
+    for i = 1, 16, 1 do
+        turtle.select(i)
+        if not(turtle.getItemDetail() == nil and turtle.getItemDetail().name == item_to_count.id) then
+            settings.item[item_to_count].count = settings.item[item_to_count].count + turtle.getItemCount(i)
+            settings.item[item_to_count].index = i
         end
     end
 end
 
 local function hasEnoughFuel(length, torch_iteration)
-    if not(settings.sim_mode) then
-        settings.current_fuel_count = turtle.getFuelLevel()
-        if (length + ((length / torch_iteration) * 4) > settings.current_fuel_count) then
-            return false
-        else
-            return true
-        end
-    end
-end
-
-local function hasEnoughTorches(iteration)
-    print(settings.length / iteration)
-    if (settings.length / iteration > settings.current_torch_count) then
+    if (length + ((length / torch_iteration) * 4) > settings.current_fuel_count) then
         return false
     else
         return true
     end
+end
+
+local function hasEnoughTorches(iteration)
+    return (settings.length / iteration > settings.current_torch_count)
 end
 
 local function promptForItem(item_to_prompt, amount)
@@ -221,33 +166,14 @@ local function promptForItem(item_to_prompt, amount)
     local prompt = io.read()
 end
 
-local function initialCheck()
-    countItem(item.torch)
-    countItem(item.fuel)
-    if (hasEnoughFuel(settings.length, 3)) then
-        if (hasEnoughTorches(3)) then
-            promptForItem(item.torch, settings.length / 3 - settings.current_torch_count)
-            initialCheck()
-        end
-    else
-        promptForItem(item.coal)
-        initialCheck()
-    end
-end
-
 local function placeTorch()
-    if (settings.debug_mode == true) then
-        print(formatted_24_hour_time .. "Placing torch at y_position " .. y_position .. ".")
-    end
-    if not(settings.sim_mode) then
-        selectItem(item.torch)
-        turtle.move("r")
-        turtle.move("r")
-        turtle.place()
-        turtle.move("r")
-        turtle.move("r")
-        settings.current_torch_count = settings.current_torch_count - 1
-    end
+    selectItem(settings.item.torch.index)
+    move("r")
+    move("r")
+    turtle.place()
+    move("r")
+    move("r")
+    settings.item.torch.count = settings.item.torch.count - 1
 end
 
 local function detectLiquid()
@@ -279,21 +205,36 @@ local function returnSequence(amount_to_return)
     end
 end
 
+local function initialCheck()
+    countItem("torch")
+    countItem("coal")
+    countItem("utility_block")
+    if (hasEnoughFuel(settings.length, 3)) then
+        if (hasEnoughTorches(3)) then
+            promptForItem(settings.item.torch, settings.length / 3 - settings.current_torch_count)
+            initialCheck()
+        end
+    else
+        promptForItem(settings.item.coal)
+        initialCheck()
+    end
+end
+
 local function mineSequence(length)
     if (length > 0) then
         for i = 1, settings.length, 1 do
             if (settings.current_pos.y + 1 % 4 == 0) then
-                placeTorch(settings.current_pos.y, 4)
+                placeTorch()
             end
             dig("f")
             move("f")
             if detectLiquid() then
-                selectItem(item.utility_block)
+                selectItem(settings.item.utility_block.index)
                 turtle.place()
                 returnSequence(length)
             end
             if (detectAir()) then
-                selectItem(item.utility_block)
+                selectItem(settings.item.utility_block.index)
                 turtle.placeDown()
             end
             dig("u")
