@@ -206,9 +206,11 @@ local function initialCheck()
             end
         else
             checkForItem("minecraft:torch")
+            initialCheck()
         end
     else
         checkForItem("minecraft:coal")
+        initialCheck()
     end
 end
 
