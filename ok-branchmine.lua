@@ -175,7 +175,7 @@ local function checkForItem(item_to_check)
                 end
             end
         end
-        io.write("Feed the turtle " .. item .. " and press enter.")
+        io.write("Feed the turtle " .. item_to_check .. " and press enter.")
         local wait_for_enter = io.read()
         checkForItem(item_to_check)
     end
@@ -199,13 +199,15 @@ local function hasEnoughTorches(move_count, iteration)
 end
 
 local function initialCheck()
-    if (hasEnoughFuel(settings.length) and hasEnoughTorches(settings.length, 4)) then
-        if (checkForItem("minecraft:torch")) then
-            if turtle.detectDown() then -- align turtle with top of tunnel
-                turtle.up()
+    if (hasEnoughFuel(settings.length)) then
+        if hasEnoughTorches(settings.length, 4) then
+            if (checkForItem("minecraft:torch")) then
+                if turtle.detectDown() then -- align turtle with top of tunnel
+                    turtle.up()
+                end
+            else
+                error("No torches found.")
             end
-        else
-            error("No torches found.")
         end
     else
         checkForItem("minecraft:coal")
