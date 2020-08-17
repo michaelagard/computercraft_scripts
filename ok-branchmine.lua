@@ -200,14 +200,12 @@ end
 
 local function initialCheck()
     if (hasEnoughFuel(settings.length)) then
-        if hasEnoughTorches(settings.length, 4) then
-            if (checkForItem("minecraft:torch")) then
-                if turtle.detectDown() then -- align turtle with top of tunnel
-                    turtle.up()
-                end
-            else
-                error("No torches found.")
+        if (hasEnoughTorches(settings.length, 4)) then
+            if turtle.detectDown() then -- align turtle with top of tunnel
+                turtle.up()
             end
+        else
+            checkForItem("minecraft:torch")
         end
     else
         checkForItem("minecraft:coal")
