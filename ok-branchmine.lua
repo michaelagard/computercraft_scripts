@@ -205,7 +205,7 @@ end
 
 local function initialCheck()
     countItem(item.torch)
-    countItem(item.coal)
+    countItem(item.fuel)
     if (hasEnoughFuel()) then
         if (hasEnoughTorches(4)) then
             if turtle.detectDown() then -- align turtle with top of tunnel
@@ -228,7 +228,7 @@ local function placeTorch(y_position, iteration)
         end
         if not(settings.sim_mode) then
             turtle.placeDown()
-            countItem(item.torch.id)
+            countItem(item.torch)
         end
     end
 end
