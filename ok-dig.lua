@@ -5,17 +5,7 @@ local wait_string = "STATUS: Observing.\n"
 local term_string = "Hold CTRL+T to terminate.\n"
 local mined_blocks = {}
 
-local function tableLength(table)
-    local table_count = 0
-    if type(table) == "table" then
-        for key, value in pairs(table) do
-            table_count = table_count + 1
-        end
-    return table_count
-    else
-        return 0
-    end
-end
+os.loadAPI("apis/tabletools")
 
 local function addCountToBlock(block_name)
     local formatted_block_name = string.match(block_name, ":.*"):sub(2):gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end):gsub("_", " ")
@@ -37,7 +27,7 @@ end
 
 local function writeMinedBlocks()
     local return_message = ""
-    if tableLength(mined_blocks) < 1 then
+    if tabletools.length(mined_blocks) < 1 then
         return_message ="No blocks have been mined."
     else
         return_message = "Blockes Mined:\n" .. table.concat(formattedBlockTable(mined_blocks), "\n")
