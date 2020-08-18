@@ -142,9 +142,11 @@ local function countItem(item_to_count)
     settings.item[item_to_count].count = 0
     for i = 1, 16, 1 do
         turtle.select(i)
-        if not(turtle.getItemDetail() == nil and turtle.getItemDetail().name == item_to_count.id) then
-            settings.item[item_to_count].count = settings.item[item_to_count].count + turtle.getItemCount(i)
-            settings.item[item_to_count].index = i
+        if not(turtle.getItemDetail() == nil) then
+            if (turtle.getItemDetail().name == item_to_count.id) then
+                settings.item[item_to_count].count = settings.item[item_to_count].count + turtle.getItemCount(i)
+                settings.item[item_to_count].index = i
+            end
         end
     end
 end
