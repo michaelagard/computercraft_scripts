@@ -5,7 +5,8 @@ local wait_string = "STATUS: Observing.\n"
 local term_string = "Hold CTRL+T to terminate.\n"
 local mined_blocks = {}
 
-os.loadAPI("apis/tabletools")
+local current_directory = shell.resolve("")
+os.loadAPI(current_directory .. "/apis/tabletools")
 
 local function addCountToBlock(block_name)
     local formatted_block_name = string.match(block_name, ":.*"):sub(2):gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end):gsub("_", " ")
@@ -27,10 +28,12 @@ end
 
 local function writeMinedBlocks()
     local return_message = ""
-    if tabletools.length(mined_blocks) < 1 then
-        return_message ="No blocks have been mined."
-    else
-        return_message = "Blockes Mined:\n" .. table.concat(formattedBlockTable(mined_blocks), "\n")
+    if not(mined_blocks == nil) then
+        if tabletools.length(mined_blocks) < 1 then
+            return_message ="No blocks have been mined."
+        else
+            return_message = "Blockes Mined:\n" .. table.concat(formattedBlockTable(mined_blocks), "\n")
+        end
     end
     return return_message
 end
