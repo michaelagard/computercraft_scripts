@@ -160,7 +160,7 @@ local function hasEnoughFuel(length, torch_iteration)
 end
 
 local function hasEnoughTorches(iteration)
-    return (settings.length / iteration > settings.current_torch_count)
+    return (settings.length / iteration > settings.item.torch.count)
 end
 
 local function promptForItem(item_to_prompt, amount)
