@@ -1,4 +1,4 @@
-local function length(table)
+function length(table)
     local table_count = 0
     if (type(table) == "table") then
         for key, value in pairs(table) do
