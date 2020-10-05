@@ -5,16 +5,38 @@ local settings = {
     ["branch"] = {},
     ["scripts"] = {},
     ["flags"] = {
-        ["-b"] = {["arguments"] = {}, ["passed"] = false, ["verbose_flag"] = "--branch", ["related_settings"] = "branch"},
-        ["-s"] = {["arguments"] = {}, ["passed"] = false, ["verbose_flag"] = "--script", ["related_settings"] = "scripts"},
-        ["-a"] = {["passed"] = false, ["verbose_flag"] = "--all", ["related_settings"] = "scripts"},
+        ["-b"] = {
+            ["synonymous"] = {"--branch"}, 
+            ["accepts_options"] = true,
+            ["related_settings"] = "branch"},
+        ["-s"] = {
+            ["synonymous"] = "--script",
+            ["accepts_options"] = true,
+            ["related_settings"] = "scripts"},
+        ["-a"] = {
+            ["passed"] = false,
+            ["verbose_flag"] = "--all",
+            ["related_settings"] = "scripts"},
         ["-v"] = {["passed"] = false, ["verbose_flag"] = "--version"},
         ["--debug"] = {["passed"] = false},
     },
     ["usage_string"] = "Usage: update [options...]\nFlags:\n-a --all: Updates default scripts.\n-b --branch <branch-name>\n-s --script <script1,script2>\n-v --version: Displays version number.",
     ["version"] = "2020.7.24.1",
 }
-
+-- local valid_arguments = {
+--     ["-?"] = {
+--         ["synonymous"] = {"--help", "-h"},
+--         ["accepts_options"] = false
+--     },
+--     ["-v"] = {
+--         ["synonymous"] = {"--version"},
+--         ["accepts_options"] = false
+--     },
+--     ["-s"] = {
+--         ["synonymous"] = {"--script"},
+--         ["accepts_options"] = true
+--     }
+-- }
 local errors = {
         ["duplicate_flag"] = function (flag) return "'" .. flag .. "'" .. " is a duplicate flag." end,
         ["invalid_flag"] = function (flag) return "'" .. flag .. "'" .. " is not a valid flag. Type 'update' to see list of flags." end,

@@ -1,112 +1,115 @@
--- example valid_argument_table
--- local valid_arguments = {
---     ["-?"] = {
---         ["synonymous"] = {"--help", "-h"},
---         ["accepts_options"] = false
---     },
---     ["-v"] = {
---         ["synonymous"] = {"--version"},
---         ["accepts_options"] = false
---     },
---     ["-s"] = {
---         ["synonymous"] = {"--script"},
---         ["accepts_options"] = true
---     }
--- }
+local args = {...}
+-- example valid_argument table
+local valid_arguments = {
+    ["-?"] = {
+        ["synonymous_arguments"] = {"--help", "-h"},
+        ["accepts_options"] = false,
+        ["maximum_options"] = 0,
+        ["minimum_options"] = 0,
+        ["data_type"] = nil -- string / integer
+    },
+    ["-v"] = {
+        ["synonymous_arguments"] = {"--version"},
+        ["accepts_options"] = false,
+        ["maximum_options"] = 0,
+        ["minimum_options"] = 0,
+        ["data_type"] = nil -- string / integer
+    },
+    ["-s"] = {
+        ["synonymous_arguments"] = {"--script"},
+        ["accepts_options"] = true,
+        ["maximum_options"] = 12,
+        ["minimum_options"] = 1,
+        ["data_type"] = nil -- string / integer
+    },
+    ["-a"] = {
+        ["synonymous_arguments"] = {"--all"},
+        ["accepts_options"] = false,
+        ["maximum_options"] = 0,
+        ["minimum_options"] = 0,
+        ["data_type"] = nil -- string / integer
+    },
+    ["--debug"] = {
+        ["synonymous_arguments"] = {},
+        ["accepts_options"] = false,
+        ["maximum_options"] = 0,
+        ["minimum_options"] = 0,
+        ["data_type"] = nil -- string / integer
+    }
+}
 
-local function findSynonymousArguments(argument, valid_argument_table)
-    local synonymous_arguments = {}
+local function constructPassedArgumentTable(passed_arguments)
+    local constructed_passed_argument_table = {}
+    local current_argument
 
-    if (valid_argument_table[argument] == nil) then
+    for i_arg = 1, #passed_arguments do
 
-        for arg_key, arg_value_unused in pairs(valid_argument_table) do
+        if string.match(passed_arguments[i_arg], "^%-") then
+            current_argument = passed_arguments[i_arg]
 
-            for i = 1, #valid_argument_table[arg_key].synonymous, 1 do
-
-                if valid_argument_table[arg_key].synonymous[i] == argument then
-
-                    for j = 1, #valid_argument_table[arg_key].synonymous, 1 do
-                        table.insert(synonymous_arguments, valid_argument_table[arg_key].synonymous[j])
-                    end
-                    table.insert(synonymous_arguments, arg_key)
-                end
-            end
-        end
-    else
-
-        for i = 1, #valid_argument_table[argument].synonymous, 1 do
-            table.insert(synonymous_arguments, valid_argument_table[argument].synonymous[i])
-        end
-    end
-
-    return synonymous_arguments
-end
-
-local function isValidArgument(argument, valid_argument_table)
-    
-    if (valid_argument_table[argument]) then
-        return true
-    else
-        
-        local synonymous_table = findSynonymousArguments(argument, valid_argument_table)
-        for i = 1, #synonymous_table, 1 do
-            if (synonymous_table[i] == argument) then
-                return true
-            end
-        end
-    end
-
-    return false
-end
-
-
-
-local function hasArgumentPassed(passed_argument, passed_argument_table, valid_argument_table)
-
-    if not(passed_argument_table[passed_argument] == nil) then
-        error("Duplicate argument '" .. passed_argument .. "' found.")
-    end
-    
-    local synonymous_table = findSynonymousArguments(passed_argument, valid_argument_table)
-
-    for i = 1, #synonymous_table do
-        for j = 1, #passed_argument_table do
-
-            if synonymous_table[i] == passed_argument_table[j] then
-                error("Duplicate argument '" .. passed_argument .. "' found.")
-            end
-        end
-    end
-
-    return false
-end
-
-
-
-local function handleArguments(arguments, valid_argument_table)
-    local argument_table = {}
-    local passed_arguments_table = {}
-    local current_valid_argument = ""
-
-    for i = 1, #arguments do
-
-        if isValidArgument(arguments[i], valid_argument_table) and not(hasArgumentPassed(arguments[i], passed_arguments_table, valid_argument_table)) then
-            argument_table[arguments[i]] = {}
-            table.insert(passed_arguments_table, arguments[i])
-            current_valid_argument = arguments[i]
-
-        elseif not(current_valid_argument == nil) and valid_argument_table[current_valid_argument] then
-
-            if valid_argument_table[current_valid_argument].accepts_options == true then
-                table.insert(argument_table[current_valid_argument], arguments[i])
+            if constructed_passed_argument_table[current_argument] == nil then
+                print("Current Argument: '" .. current_argument .. "'.")
+                constructed_passed_argument_table[current_argument] = {}
             else
-                error(current_valid_argument .. " does not accept options.")
+                error("Duplicate argument found: '" .. current_argument .. "'.")
             end
         else
-            
-            error(arguments[i] .. " is not a valid option for " .. current_valid_argument)
+            local current_option = passed_arguments[i_arg]
+            print("Adding '" .. current_option .. "' to '" .. current_argument)
+            constructed_passed_argument_table[current_argument][current_option] = true
         end
     end
-
-    return argument_table
+    
+    return constructed_passed_argument_table
 end
+
+local function constructNestedArgumentSet(valid_argument_table)
+    local return_nested_argument_set = {}
+    for arg_key, arg_value in pairs(valid_argument_table) do
+        return_nested_argument_set[arg_key] = {}
+        for i_arg = 1, #valid_argument_table[arg_key].synonymous_arguments do
+            return_nested_argument_set[arg_key][valid_argument_table[arg_key].synonymous_arguments[i_arg]] = true
+        end
+    end
+    return return_nested_argument_set
+end
+
+local function areArgumentsValid(passed_argument_table, valid_nested_argument_set)
+    for arg_key, arg_value in pairs(passed_argument_table) do
+        for valid_arg_key, valid_arg_value in pairs(valid_nested_argument_set) do
+            if (valid_nested_argument_set[valid_arg_key][arg_key] == nil) then
+                error("Invalid argument '" .. arg_key .. "'.")
+            end
+        end
+    end
+end
+
+
+local function checkForDuplicateArguments(passed_argument_table, valid_nested_argument_set)
+    local temp_check_table = {}
+    print(textutils.serialise(passed_argument_table))
+    for arg_key, arg_value in pairs(passed_argument_table) do
+        local current_argument = arg_key
+        for valid_arg_key, valid_arg_value in pairs(valid_nested_argument_set) do
+        end
+    end
+end
+
+-- before validation, create nested set / key table of all arguments and options
+-- iterate through arguments and check if they exist in the nested set / key table
+-- check if argument exists in another form in the synonymous table and root
+-- iterate through options and check if they pass the rules of the valid_argument_table
+-- return formatted argument_table
+
+local function handleArguments(arguments, valid_argument_table)
+    local return_table = {}
+    local passed_argument_table = constructPassedArgumentTable(arguments)
+    -- print(textutils.serialise(passed_argument_table))
+    local valid_nested_argument_set = constructNestedArgumentSet(valid_argument_table)
+    print(textutils.serialise(valid_nested_argument_set))
+    areArgumentsValid(passed_argument_table, valid_nested_argument_set)
+    checkForDuplicateArguments(passed_argument_table, valid_nested_argument_set)
+    return return_table
+end
+
+handleArguments(args, valid_arguments)
